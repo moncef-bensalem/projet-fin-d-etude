@@ -12,7 +12,7 @@ export default function RootLayout({ children }) {
   return (
     <html lang="fr" suppressHydrationWarning>
       <head>
-        <title>PInventory - Gestion de stock</title>
+        <title>Penventory - Gestion de stock</title>
         <meta name="description" content="Application de gestion de stock" />
       </head>
       <body className={inter.className}>

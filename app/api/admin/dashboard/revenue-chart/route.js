@@ -160,7 +160,9 @@ export async function GET(request) {
     // In development, return demo data if DB error occurs
     if (process.env.NODE_ENV === 'development') {
       console.log('[API] Returning demo revenue chart data');
-      return NextResponse.json(generateDemoRevenueData());
+      // Générer des données de démonstration différentes à chaque appel
+      // en utilisant le paramètre de période pour varier les données
+      return NextResponse.json(generateDemoRevenueData(period));
     }
     
     return NextResponse.json({ error: 'Erreur lors de la récupération des données de revenus' }, { status: 500 });
@@ -168,36 +170,86 @@ export async function GET(request) {
 }
 
 // Helper function to generate demo data for development
-function generateDemoRevenueData() {
+function generateDemoRevenueData(period = 'week') {
   // Get current date
   const now = new Date();
-  const startDate = new Date(now);
-  startDate.setDate(now.getDate() - 7);
+  let startDate;
+  let interval;
+  let format;
   
-  // Generate daily revenue data for past week
-  const data = [];
-  let currentDate = new Date(startDate);
-  let total = 0;
-  
-  while (currentDate <= now) {
-    // Random revenue between 500 and 5000
-    const value = Math.floor(Math.random() * 4500) + 500;
-    total += value;
-    
-    data.push({
-      date: currentDate.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' }),
-      value
-    });
-    
-    currentDate.setDate(currentDate.getDate() + 1);
+  // Set date range based on period
+  switch (period) {
+    case 'week':
+      startDate = new Date(now);
+      startDate.setDate(now.getDate() - 7);
+      interval = 'day';
+      format = { day: 'numeric', month: 'short' };
+      break;
+    case 'month':
+      startDate = new Date(now);
+      startDate.setMonth(now.getMonth() - 1);
+      interval = 'day';
+      format = { day: 'numeric', month: 'short' };
+      break;
+    case 'year':
+      startDate = new Date(now);
+      startDate.setFullYear(now.getFullYear() - 1);
+      interval = 'month';
+      format = { month: 'short' };
+      break;
+    default:
+      startDate = new Date(now);
+      startDate.setDate(now.getDate() - 7);
+      interval = 'day';
+      format = { day: 'numeric', month: 'short' };
   }
   
-  const average = total / data.length;
+  // Generate data based on period
+  const data = [];
+  let total = 0;
+  
+  if (interval === 'day') {
+    // Generate daily data
+    let currentDate = new Date(startDate);
+    while (currentDate <= now) {
+      // Utiliser Date.now() pour avoir des valeurs différentes à chaque appel
+      // Random revenue between 500 and 5000 with some variance based on timestamp
+      const seed = currentDate.getTime() + Date.now() % 10000;
+      const value = Math.floor((seed % 4500) + 500);
+      total += value;
+      
+      data.push({
+        date: currentDate.toLocaleDateString('fr-FR', format),
+        value
+      });
+      
+      currentDate.setDate(currentDate.getDate() + 1);
+    }
+  } else {
+    // Generate monthly data
+    let currentMonth = new Date(startDate);
+    while (currentMonth <= now) {
+      // Utiliser Date.now() pour avoir des valeurs différentes à chaque appel
+      // Random revenue between 5000 and 50000 with some variance based on timestamp
+      const seed = currentMonth.getTime() + Date.now() % 10000;
+      const value = Math.floor((seed % 45000) + 5000);
+      total += value;
+      
+      data.push({
+        date: currentMonth.toLocaleDateString('fr-FR', format),
+        value
+      });
+      
+      currentMonth.setMonth(currentMonth.getMonth() + 1);
+    }
+  }
+  
+  const average = total / data.length || 0;
   
   return {
     data,
     total,
     average,
-    period: 'week'
+    period
   };
 } 

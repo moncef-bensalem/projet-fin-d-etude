@@ -1,6 +1,7 @@
 'use client';
 
 import { useAuth } from '../../context/auth-context';
+import { useLanguage } from '../../context/language-context';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { Button } from '../ui/button';
 import {
@@ -17,6 +18,7 @@ import { useRouter } from 'next/navigation';
 
 export default function UserNav() {
   const { user, logout } = useAuth();
+  const { t } = useLanguage();
   const router = useRouter();
 
   const handleLogout = async () => {
@@ -50,19 +52,19 @@ export default function UserNav() {
         <DropdownMenuGroup>
           <DropdownMenuItem onClick={() => router.push('/dashboard/profile')} className="cursor-pointer">
             <User className="mr-2 h-4 w-4" />
-            <span>Mon profil</span>
+            <span>{t('profile')}</span>
           </DropdownMenuItem>
           {user?.store && (
             <DropdownMenuItem onClick={() => router.push(`/dashboard/stores/${user.store.id}`)} className="cursor-pointer">
               <Store className="mr-2 h-4 w-4" />
-              <span>Mon magasin</span>
+              <span>{t('myStore')}</span>
             </DropdownMenuItem>
           )}
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={handleLogout} className="cursor-pointer text-red-600 focus:text-red-600">
           <LogOut className="mr-2 h-4 w-4" />
-          <span>Se déconnecter</span>
+          <span>{t('logout')}</span>
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

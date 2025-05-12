@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/context/auth-context';
+import Link from 'next/link';
 import PageHead from '@/components/backoffice/PageHead';
 import { DataTable } from '@/components/ui/data-table';
 import { Button } from '@/components/ui/button';
@@ -59,16 +60,61 @@ export default function ManagerSupportPage() {
   const fetchTickets = async () => {
     try {
       setLoading(true);
-      // En développement, utiliser des données fictives
-      const demoTickets = generateDemoTickets();
-      setTickets(demoTickets);
+      
+      // Appeler l'API pour récupérer les tickets
+      const response = await fetch('/api/tickets');
+      
+      if (!response.ok) {
+        throw new Error('Erreur lors de la récupération des tickets');
+      }
+      
+      const ticketsData = await response.json();
+      
+      // Formater les tickets pour qu'ils correspondent à notre structure
+      const formattedTickets = ticketsData.map(ticket => ({
+        id: ticket.id,
+        subject: ticket.subject,
+        description: ticket.description,
+        status: ticket.status,
+        priority: ticket.priority,
+        category: ticket.category,
+        customer: {
+          id: ticket.customer.id,
+          name: ticket.customer.name,
+          email: ticket.customer.email
+        },
+        assignedTo: ticket.assignedTo ? {
+          id: ticket.assignedTo.id,
+          name: ticket.assignedTo.name,
+          email: ticket.assignedTo.email
+        } : null,
+        createdAt: new Date(ticket.createdAt),
+        lastUpdated: new Date(ticket.updatedAt),
+        messagesCount: ticket.messages.length,
+        orderNumber: ticket.orderNumber
+      }));
+      
+      setTickets(formattedTickets);
       
       // Calculer le résumé des tickets
-      calculateTicketSummary(demoTickets);
+      calculateTicketSummary(formattedTickets);
+      
+      // En cas d'erreur ou si aucun ticket n'est retourné, utiliser des données de démo
+      if (formattedTickets.length === 0) {
+        const demoTickets = generateDemoTickets();
+        setTickets(demoTickets);
+        calculateTicketSummary(demoTickets);
+        toast.info('Aucun ticket trouvé. Affichage des données de démonstration.');
+      }
       
     } catch (error) {
       console.error('Error fetching support tickets:', error);
       toast.error('Erreur lors de la récupération des tickets de support');
+      
+      // En cas d'erreur, utiliser des données de démo
+      const demoTickets = generateDemoTickets();
+      setTickets(demoTickets);
+      calculateTicketSummary(demoTickets);
     } finally {
       setLoading(false);
     }
@@ -410,14 +456,16 @@ export default function ManagerSupportPage() {
         const ticket = row.original;
         return (
           <div className="flex items-center gap-2">
-            <Button 
-              variant="outline" 
-              size="sm"
-              className="flex items-center"
-            >
-              <Eye className="h-4 w-4 mr-1" />
-              Voir détails
-            </Button>
+            <Link href={`/manager/dashboard/support/${row.original.id}`}>
+              <Button 
+                variant="outline" 
+                size="sm"
+                className="flex items-center"
+              >
+                <Eye className="h-4 w-4 mr-1" />
+                Voir détails
+              </Button>
+            </Link>
           </div>
         );
       },
@@ -453,56 +501,48 @@ export default function ManagerSupportPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-50 to-orange-100 dark:from-gray-900 dark:to-gray-800">
+    <div className="container mx-auto p-4">
       <PageHead 
-        title="Support Client" 
-        subtitle="Gérez les tickets de support et les demandes des clients"
+        title="Support client" 
+        description="Gestion des tickets de support client" 
+        icon={<MessagesSquare className="h-6 w-6" />}
       />
       
-      <div className="p-6">
+      <div className="space-y-6">
         {/* Résumé des tickets */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
-          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm">
-            <div className="flex items-center justify-between">
-              <h3 className="text-lg font-medium text-gray-700 dark:text-gray-300">Total des tickets</h3>
-              <MessageSquare className="h-6 w-6 text-orange-500" />
-            </div>
-            <p className="text-3xl font-bold mt-2">{ticketSummary.totalTickets}</p>
-          </div>
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <Card>
+            <CardContent className="p-4 flex flex-col items-center justify-center">
+              <div className="text-3xl font-bold mb-1">{ticketSummary.totalTickets}</div>
+              <div className="text-sm text-gray-500 dark:text-gray-400">Total des tickets</div>
+            </CardContent>
+          </Card>
           
-          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm">
-            <div className="flex items-center justify-between">
-              <h3 className="text-lg font-medium text-gray-700 dark:text-gray-300">Tickets ouverts</h3>
-              <Clock className="h-6 w-6 text-blue-500" />
-            </div>
-            <p className="text-3xl font-bold mt-2 text-blue-600">
-              {ticketSummary.openTickets}
-            </p>
-          </div>
+          <Card>
+            <CardContent className="p-4 flex flex-col items-center justify-center">
+              <div className="text-3xl font-bold mb-1 text-blue-500">{ticketSummary.openTickets}</div>
+              <div className="text-sm text-gray-500 dark:text-gray-400">Tickets ouverts</div>
+            </CardContent>
+          </Card>
           
-          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm">
-            <div className="flex items-center justify-between">
-              <h3 className="text-lg font-medium text-gray-700 dark:text-gray-300">Tickets résolus</h3>
-              <CheckCircle className="h-6 w-6 text-green-500" />
-            </div>
-            <p className="text-3xl font-bold mt-2 text-green-600">
-              {ticketSummary.resolvedTickets}
-            </p>
-          </div>
+          <Card>
+            <CardContent className="p-4 flex flex-col items-center justify-center">
+              <div className="text-3xl font-bold mb-1 text-yellow-500">{ticketSummary.pendingTickets}</div>
+              <div className="text-sm text-gray-500 dark:text-gray-400">Tickets en attente</div>
+            </CardContent>
+          </Card>
           
-          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm">
-            <div className="flex items-center justify-between">
-              <h3 className="text-lg font-medium text-gray-700 dark:text-gray-300">En cours de traitement</h3>
-              <UserCheck className="h-6 w-6 text-yellow-500" />
-            </div>
-            <p className="text-3xl font-bold mt-2 text-yellow-600">
-              {ticketSummary.pendingTickets}
-            </p>
-          </div>
+          <Card>
+            <CardContent className="p-4 flex flex-col items-center justify-center">
+              <div className="text-3xl font-bold mb-1 text-green-500">{ticketSummary.resolvedTickets}</div>
+              <div className="text-sm text-gray-500 dark:text-gray-400">Tickets résolus</div>
+            </CardContent>
+          </Card>
         </div>
-
-        <div className="mb-6 flex flex-col md:flex-row md:justify-between md:items-center gap-4">
-          <div className="flex items-center space-x-2">
+        
+        {/* Actions */}
+        <div className="flex flex-wrap gap-2 justify-between items-center">
+          <div className="flex flex-wrap gap-2">
             <Button 
               variant="outline" 
               onClick={() => setShowFilters(!showFilters)}
@@ -520,31 +560,22 @@ export default function ManagerSupportPage() {
               <RefreshCw className="h-4 w-4 mr-2" />
               Actualiser
             </Button>
-            
-            <Button 
-              variant="outline" 
-              onClick={exportToCSV}
-              className="flex items-center"
-            >
-              <Download className="h-4 w-4 mr-2" />
-              Exporter CSV
-            </Button>
           </div>
           
-          <div className="flex items-center space-x-2">
-            <Badge variant="outline" className="text-sm">
-              Total: {tickets.length} tickets
-            </Badge>
-            <Badge variant="secondary" className="text-sm">
-              Filtrés: {filteredTickets.length} tickets
-            </Badge>
-          </div>
+          <Button 
+            variant="outline" 
+            onClick={exportToCSV}
+            className="flex items-center"
+          >
+            <Download className="h-4 w-4 mr-2" />
+            Exporter en CSV
+          </Button>
         </div>
         
+        {/* Filtres */}
         {showFilters && (
-          <div className="mb-6 bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm">
-            <h3 className="text-lg font-medium mb-4">Filtres</h3>
-            <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4">
+          <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
               <div>
                 <label htmlFor="status" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   Statut
@@ -557,7 +588,7 @@ export default function ManagerSupportPage() {
                 >
                   <option value="">Tous les statuts</option>
                   <option value="OPEN">Ouvert</option>
-                  <option value="PENDING">En cours</option>
+                  <option value="PENDING">En attente</option>
                   <option value="RESOLVED">Résolu</option>
                   <option value="CLOSED">Fermé</option>
                 </select>
@@ -672,4 +703,4 @@ export default function ManagerSupportPage() {
       </div>
     </div>
   );
-} 
+}

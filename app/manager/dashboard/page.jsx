@@ -6,20 +6,53 @@ import { UserCheck, ShoppingCart, MessageSquare, Store, FilePenLine, ArrowUp, Ar
 import { useAuth } from '@/context/auth-context';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend, CategoryScale, LinearScale, PointElement, LineElement, Title } from 'chart.js';
 import { Doughnut, Line } from 'react-chartjs-2';
+import { Loader2 } from 'lucide-react';
 
 ChartJS.register(ArcElement, Tooltip, Legend, CategoryScale, LinearScale, PointElement, LineElement, Title);
 
 export default function ManagerDashboardPage() {
   const { user } = useAuth();
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [stats, setStats] = useState({
-    pendingSellers: 12,
-    pendingProducts: 24,
-    supportTickets: 8,
-    reviewsToModerate: 15,
-    recentTransactions: 345,
-    transactionGrowth: 8.5
+    pendingSellers: 0,
+    pendingProducts: 0,
+    supportTickets: 0,
+    reviewsToModerate: 0,
+    recentTransactions: 0,
+    transactionGrowth: 0,
+    transactionData: {
+      labels: [],
+      values: []
+    },
+    recentActivities: []
   });
 
+  // Récupération des données du tableau de bord depuis l'API
+  useEffect(() => {
+    const fetchDashboardStats = async () => {
+      try {
+        setLoading(true);
+        const response = await fetch('/api/manager/dashboard/stats');
+        
+        if (!response.ok) {
+          throw new Error(`Erreur lors de la récupération des données: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        setStats(data);
+        setError(null);
+      } catch (err) {
+        console.error('Erreur lors du chargement des statistiques:', err);
+        setError('Impossible de charger les données du tableau de bord. Veuillez réessayer plus tard.');
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    fetchDashboardStats();
+  }, []);
+  
   // Données pour le graphique circulaire des actions en attente
   const pendingActionsData = {
     labels: ['Vendeurs', 'Produits', 'Tickets Support', 'Avis'],
@@ -45,11 +78,11 @@ export default function ManagerDashboardPage() {
 
   // Données pour le graphique linéaire des transactions
   const transactionData = {
-    labels: ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin', 'Juil'],
+    labels: stats.transactionData?.labels || [],
     datasets: [
       {
         label: 'Transactions',
-        data: [3200, 3800, 3400, 4100, 3900, 4600, 5200],
+        data: stats.transactionData?.values || [],
         fill: false,
         backgroundColor: 'rgba(234, 88, 12, 0.5)',
         borderColor: 'rgba(234, 88, 12, 1)',
@@ -87,6 +120,34 @@ export default function ManagerDashboardPage() {
       linkTo: "/manager/dashboard/reviews"
     },
   ];
+
+  // Afficher un indicateur de chargement pendant le chargement des données
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-96">
+        <Loader2 className="h-8 w-8 text-orange-500 animate-spin" />
+        <span className="ml-2 text-lg text-gray-700 dark:text-gray-300">Chargement des données...</span>
+      </div>
+    );
+  }
+
+  // Afficher un message d'erreur si la récupération des données a échoué
+  if (error) {
+    return (
+      <div className="flex items-center justify-center h-96">
+        <div className="text-center p-6 bg-red-50 dark:bg-red-900/20 rounded-lg">
+          <p className="text-red-600 dark:text-red-400 text-lg mb-2">Erreur</p>
+          <p className="text-gray-700 dark:text-gray-300">{error}</p>
+          <button 
+            onClick={() => window.location.reload()} 
+            className="mt-4 px-4 py-2 bg-orange-500 text-white rounded-md hover:bg-orange-600 transition-colors"
+          >
+            Réessayer
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -181,46 +242,27 @@ export default function ManagerDashboardPage() {
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            {[
-              {
-                type: 'seller_request',
-                user: 'Mohamed Ben Salah',
-                time: 'Il y a 30 minutes',
-                action: 'a demandé à devenir vendeur'
-              },
-              {
-                type: 'product_submit',
-                user: 'Boutique Joli Bazar',
-                time: 'Il y a 1 heure',
-                action: 'a soumis 5 nouveaux produits pour validation'
-              },
-              {
-                type: 'support_ticket',
-                user: 'Ahmed Khelifi',
-                time: 'Il y a 2 heures',
-                action: 'a ouvert un ticket de support concernant une commande'
-              },
-              {
-                type: 'review_flagged',
-                user: 'Système automatique',
-                time: 'Il y a 3 heures',
-                action: 'a signalé un avis potentiellement abusif'
-              }
-            ].map((activity, i) => (
-              <div key={i} className="flex items-start space-x-4 p-3 rounded-lg bg-orange-50 dark:bg-slate-800/30">
-                <div className="rounded-full bg-orange-100 dark:bg-slate-700 p-2">
-                  {activity.type === 'seller_request' && <UserCheck className="h-5 w-5 text-orange-600" />}
-                  {activity.type === 'product_submit' && <Store className="h-5 w-5 text-orange-500" />}
-                  {activity.type === 'support_ticket' && <MessageSquare className="h-5 w-5 text-orange-400" />}
-                  {activity.type === 'review_flagged' && <FilePenLine className="h-5 w-5 text-orange-300" />}
+            {stats.recentActivities && stats.recentActivities.length > 0 ? (
+              stats.recentActivities.map((activity, i) => (
+                <div key={i} className="flex items-start space-x-4 p-3 rounded-lg bg-orange-50 dark:bg-slate-800/30">
+                  <div className="rounded-full bg-orange-100 dark:bg-slate-700 p-2">
+                    {activity.type === 'seller_request' && <UserCheck className="h-5 w-5 text-orange-600" />}
+                    {activity.type === 'product_submit' && <Store className="h-5 w-5 text-orange-500" />}
+                    {activity.type === 'support_ticket' && <MessageSquare className="h-5 w-5 text-orange-400" />}
+                    {activity.type === 'review_flagged' && <FilePenLine className="h-5 w-5 text-orange-300" />}
+                  </div>
+                  <div className="flex-1">
+                    <p className="font-medium text-gray-800 dark:text-gray-200">{activity.user}</p>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">{activity.action}</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">{activity.time}</p>
+                  </div>
                 </div>
-                <div className="flex-1">
-                  <p className="font-medium text-gray-800 dark:text-gray-200">{activity.user}</p>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">{activity.action}</p>
-                  <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">{activity.time}</p>
-                </div>
+              ))
+            ) : (
+              <div className="text-center py-6 text-gray-500 dark:text-gray-400">
+                <p>Aucune activité récente à afficher</p>
               </div>
-            ))}
+            )}
           </div>
         </CardContent>
       </Card>

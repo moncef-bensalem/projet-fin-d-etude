@@ -15,7 +15,8 @@ import {
   Settings, 
   LayoutDashboard, 
   LogOut, 
-  FileText 
+  FileText,
+  BookOpen 
 } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 import { signOut } from 'next-auth/react';
@@ -42,6 +43,11 @@ export default function ManagerSidebar({showSideBar = true, setShowSideBar = () 
       title: 'Tableau de bord',
       icon: LayoutDashboard,
       route: '/manager/dashboard'
+    },
+    {
+      title: 'Listes Scolaires',
+      icon: BookOpen,
+      route: '/manager/dashboard/listes-scolaires'
     },
     {
       title: 'Approbation Vendeurs',

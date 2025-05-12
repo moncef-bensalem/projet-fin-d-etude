@@ -17,7 +17,8 @@ import {
   Layers,
   CreditCard,
   ShoppingCart,
-  ExternalLink
+  ExternalLink,
+  BookOpen
 } from 'lucide-react';
 
 const routes = [
@@ -45,6 +46,11 @@ const routes = [
     label: 'Boutique',
     icon: Store,
     href: '/seller/dashboard/store',
+  },
+  {
+    label: 'Listes scolaires',
+    icon: BookOpen,
+    href: '/seller/listes-scolaires',
   },
   {
     label: 'Promotions',

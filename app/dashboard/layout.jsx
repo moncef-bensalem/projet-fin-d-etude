@@ -3,11 +3,12 @@
 import Sidebar from '../../components/backoffice/Sidebar';
 import { Header } from '../../components/backoffice/Header';
 import { useAuth } from '../../context/auth-context';
+import { LanguageProvider } from '../../context/language-context';
 import { Toaster } from 'react-hot-toast';
 import { useState, useEffect } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 
-export default function BackOfficeLayout({ children }) {
+function BackOfficeContent({ children }) {
   const { user, loading } = useAuth();
   const [showSideBar, setShowSideBar] = useState(false);
   const pathname = usePathname();
@@ -95,5 +96,14 @@ export default function BackOfficeLayout({ children }) {
         }}
       />
     </div>
+  );
+}
+
+// Wrapper avec le LanguageProvider
+export default function BackOfficeLayout({ children }) {
+  return (
+    <LanguageProvider>
+      <BackOfficeContent>{children}</BackOfficeContent>
+    </LanguageProvider>
   );
 }

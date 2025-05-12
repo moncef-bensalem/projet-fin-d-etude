@@ -5,9 +5,21 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { useAuth } from '@/context/auth-context';
+import { LanguageProvider, useLanguage } from '@/context/language-context';
+import { LanguageSelector } from '@/components/LanguageSelector';
+import ChatSupport from '@/components/support/ChatSupport';
 import { ShoppingCart, User, Search, Menu, X, Heart, LogIn, LogOut } from 'lucide-react';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
-export default function StoreLayout({ children }) {
+function StoreLayoutContent({ children }) {
+  const { t } = useLanguage();
   const { user, loading, logout } = useAuth();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
@@ -83,108 +95,122 @@ export default function StoreLayout({ children }) {
             {/* Navigation sur desktop */}
             <nav className="hidden md:flex space-x-8">
               <Link href="/" className={`text-sm font-medium ${pathname === '/' ? 'text-orange-600' : 'text-gray-700 hover:text-orange-600'} transition-colors`}>
-                Accueil
+                {t('home')}
               </Link>
               <Link href="/products" className={`text-sm font-medium ${pathname.startsWith('/products') ? 'text-orange-600' : 'text-gray-700 hover:text-orange-600'} transition-colors`}>
-                Produits
+                {t('products')}
               </Link>
               <Link href="/categories" className={`text-sm font-medium ${pathname.startsWith('/categories') ? 'text-orange-600' : 'text-gray-700 hover:text-orange-600'} transition-colors`}>
-                Catégories
+                {t('categories')}
               </Link>
               <Link href="/store" className={`text-sm font-medium ${pathname.startsWith('/store') ? 'text-orange-600' : 'text-gray-700 hover:text-orange-600'} transition-colors`}>
-                Magasins
+                {t('sellers')}
+              </Link>
+              <Link href="/contact" className={`text-sm font-medium ${pathname.startsWith('/contact') ? 'text-orange-600' : 'text-gray-700 hover:text-orange-600'} transition-colors`}>
+                {t('contact')}
+              </Link>
+              <Link href="/listes-scolaires" className={`text-sm font-medium ${pathname.startsWith('/listes-scolaires') ? 'text-orange-600' : 'text-gray-700 hover:text-orange-600'} transition-colors`}>
+                {t('schoolLists')}
+              </Link>
+              <Link href="/help" className={`text-sm font-medium ${pathname.startsWith('/help') ? 'text-orange-600' : 'text-gray-700 hover:text-orange-600'} transition-colors`}>
+                {t('help')}
+              </Link>
+              <Link href="/become-seller" className={`text-sm font-medium ${pathname.startsWith('/become-seller') ? 'text-orange-600' : 'text-gray-700 hover:text-orange-600'} transition-colors`}>
+                {t('becomeSeller')}
               </Link>
             </nav>
 
-            {/* Actions */}
+            {/* Icônes d'action */}
             <div className="flex items-center space-x-4">
               {/* Recherche */}
               <button
                 onClick={() => setIsSearchOpen(!isSearchOpen)}
                 className="p-2 text-gray-700 hover:text-orange-600 transition-colors"
-                aria-label="Rechercher"
+                aria-label="Recherche"
               >
                 <Search className="h-5 w-5" />
               </button>
-
+              
               {/* Favoris */}
-              <Link href="/favorites" className="hidden sm:flex p-2 text-gray-700 hover:text-orange-600 transition-colors">
+              <Link href="/wishlist" className="p-2 text-gray-700 hover:text-orange-600 transition-colors">
                 <Heart className="h-5 w-5" />
               </Link>
-
+              
               {/* Panier */}
               <Link href="/cart" className="relative p-2 text-gray-700 hover:text-orange-600 transition-colors">
                 <ShoppingCart className="h-5 w-5" />
                 {cartCount > 0 && (
-                  <span className="absolute -top-1 -right-1 bg-orange-600 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                  <span className="absolute -top-1 -right-1 bg-orange-600 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
                     {cartCount}
                   </span>
                 )}
               </Link>
-
+              
+              {/* Utilisons le composant LanguageSelector au lieu d'une implémentation personnalisée */}
+              <div className="hidden sm:block">
+                <LanguageSelector />
+              </div>
               {/* Compte */}
               {loading ? (
                 <div className="h-5 w-5 animate-pulse bg-gray-200 rounded-full"></div>
               ) : user ? (
-                <div className="relative group">
-                  <button className="flex items-center space-x-1 p-2 text-gray-700 hover:text-orange-600 transition-colors">
-                    <User className="h-5 w-5" />
-                    <span className="hidden sm:inline text-sm font-medium">{user.name}</span>
-                  </button>
-                  <div className="absolute right-0 mt-2 py-2 w-48 bg-white rounded-md shadow-xl z-20 hidden group-hover:block">
-                    {user?.role === 'ADMIN' && (
-                      <Link href="/dashboard" className="block px-4 py-2 text-sm text-gray-700 hover:bg-orange-50">
-                        Tableau de bord
-                      </Link>
-                    )}
-                    {user?.role === 'MANAGER' && (
-                      <Link href="/manager/dashboard" className="block px-4 py-2 text-sm text-gray-700 hover:bg-orange-50">
-                        Tableau de bord
-                      </Link>
-                    )}
-                    {user?.role === 'SELLER' && (
-                      <Link href="/seller/dashboard" className="block px-4 py-2 text-sm text-gray-700 hover:bg-orange-50">
-                        Tableau de bord
-                      </Link>
-                    )}
-                    <Link href="/account/orders" className="block px-4 py-2 text-sm text-gray-700 hover:bg-orange-50">
-                      Mes commandes
-                    </Link>
-                    <Link href="/account/orders/track" className="block px-4 py-2 text-sm text-gray-700 hover:bg-orange-50">
-                      Suivi de commandes
-                    </Link>
-                    {user?.role === 'ADMIN' && (
-                      <Link href="/dashboard/profile" className="block px-4 py-2 text-sm text-gray-700 hover:bg-orange-50">
-                        Mon profil
-                      </Link>
-                    )}
-                    {user?.role === 'MANAGER' && (
-                      <Link href="/manager/dashboard/settings" className="block px-4 py-2 text-sm text-gray-700 hover:bg-orange-50">
-                        Mon profil
-                      </Link>
-                    )}
-                    {user?.role === 'SELLER' && (
-                      <Link href="/seller/dashboard/profile" className="block px-4 py-2 text-sm text-gray-700 hover:bg-orange-50">
-                        Mon profil
-                      </Link>
-                    )}
-                    {(user?.role === 'CUSTOMER' || !user?.role) && (
-                      <Link href="/account/profile" className="block px-4 py-2 text-sm text-gray-700 hover:bg-orange-50">
-                        Mon profil
-                      </Link>
-                    )}
-                    <button 
-                      onClick={logout} 
-                      className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50"
-                    >
-                      Déconnexion
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <button className="flex items-center space-x-1 p-2 text-gray-700 hover:text-orange-600 transition-colors">
+                      <User className="h-5 w-5" />
+                      <span className="hidden sm:inline text-sm font-medium">{user.name}</span>
                     </button>
-                  </div>
-                </div>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-56">
+                    <DropdownMenuLabel>{t('myAccount')}</DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem asChild>
+                      <Link href="/profile" className="cursor-pointer">
+                        {t('profile')}
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link href="/orders" className="cursor-pointer">
+                        {t('myOrders')}
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link href="/wishlist" className="cursor-pointer">
+                        {t('wishlist')}
+                      </Link>
+                    </DropdownMenuItem>
+                    {user.role === 'ADMIN' && (
+                      <DropdownMenuItem asChild>
+                        <Link href="/dashboard" className="cursor-pointer">
+                          {t('administration')}
+                        </Link>
+                      </DropdownMenuItem>
+                    )}
+                    {user.role === 'MANAGER' && (
+                      <DropdownMenuItem asChild>
+                        <Link href="/manager/dashboard" className="cursor-pointer">
+                          {t('management')}
+                        </Link>
+                      </DropdownMenuItem>
+                    )}
+                    {user.role === 'SELLER' && (
+                      <DropdownMenuItem asChild>
+                        <Link href="/seller/dashboard" className="cursor-pointer">
+                          {t('sellerSpace')}
+                        </Link>
+                      </DropdownMenuItem>
+                    )}
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={logout} className="cursor-pointer text-red-600 hover:text-red-700">
+                      <LogOut className="mr-2 h-4 w-4" />
+                      {t('logout')}
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               ) : (
                 <Link href="/login" className="flex items-center space-x-1 p-2 text-gray-700 hover:text-orange-600 transition-colors">
                   <LogIn className="h-5 w-5" />
-                  <span className="hidden sm:inline text-sm font-medium">Connexion</span>
+                  <span className="hidden sm:inline text-sm font-medium">{t('login')}</span>
                 </Link>
               )}
 
@@ -209,7 +235,7 @@ export default function StoreLayout({ children }) {
                   type="text"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Rechercher des produits..."
+                  placeholder={t('searchPlaceholder')}
                   className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                 />
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
@@ -217,7 +243,7 @@ export default function StoreLayout({ children }) {
                   type="submit"
                   className="absolute right-3 top-1/2 transform -translate-y-1/2 text-sm font-medium text-orange-600 hover:text-orange-700"
                 >
-                  Rechercher
+                  {t('search')}
                 </button>
               </div>
             </form>
@@ -233,42 +259,42 @@ export default function StoreLayout({ children }) {
                 className={`px-4 py-2 text-sm font-medium ${pathname === '/' ? 'text-orange-600' : 'text-gray-700'}`}
                 onClick={() => setIsMenuOpen(false)}
               >
-                Accueil
+                {t('home')}
               </Link>
               <Link
                 href="/products"
                 className={`px-4 py-2 text-sm font-medium ${pathname.startsWith('/products') ? 'text-orange-600' : 'text-gray-700'}`}
                 onClick={() => setIsMenuOpen(false)}
               >
-                Produits
+                {t('products')}
               </Link>
               <Link
                 href="/categories"
                 className={`px-4 py-2 text-sm font-medium ${pathname.startsWith('/categories') ? 'text-orange-600' : 'text-gray-700'}`}
                 onClick={() => setIsMenuOpen(false)}
               >
-                Catégories
+                {t('categories')}
               </Link>
               <Link
                 href="/store"
                 className={`px-4 py-2 text-sm font-medium ${pathname.startsWith('/store') ? 'text-orange-600' : 'text-gray-700'}`}
                 onClick={() => setIsMenuOpen(false)}
               >
-                Magasins
+                {t('sellers')}
               </Link>
               <Link
                 href="/favorites"
                 className={`px-4 py-2 text-sm font-medium ${pathname === '/favorites' ? 'text-orange-600' : 'text-gray-700'}`}
                 onClick={() => setIsMenuOpen(false)}
               >
-                Favoris
+                {t('favorites')}
               </Link>
               <Link
                 href="/orders"
                 className={`px-4 py-2 text-sm font-medium ${pathname === '/orders' ? 'text-orange-600' : 'text-gray-700'}`}
                 onClick={() => setIsMenuOpen(false)}
               >
-                Mes commandes
+                {t('myOrders')}
               </Link>
               {!user && (
                 <Link
@@ -276,7 +302,7 @@ export default function StoreLayout({ children }) {
                   className="px-4 py-2 text-sm font-medium text-orange-600"
                   onClick={() => setIsMenuOpen(false)}
                 >
-                  Connexion / Inscription
+                  {t('login')}
                 </Link>
               )}
               {user && (
@@ -287,7 +313,7 @@ export default function StoreLayout({ children }) {
                   }}
                   className="px-4 py-2 text-sm font-medium text-red-600 text-left"
                 >
-                  Déconnexion
+                  {t('logout')}
                 </button>
               )}
             </nav>
@@ -305,9 +331,9 @@ export default function StoreLayout({ children }) {
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
             <div>
-              <h3 className="text-lg font-bold mb-4">PENVENTORY</h3>
+              <h3 className="text-lg font-bold mb-4">{t('aboutUs')}</h3>
               <p className="text-gray-400 mb-4">
-                Votre marketplace en ligne pour tous vos besoins d'achat et de vente.
+                {t('aboutUsText')}
               </p>
               <div className="flex space-x-4">
                 <a href="#" className="text-gray-400 hover:text-white transition-colors">
@@ -328,7 +354,7 @@ export default function StoreLayout({ children }) {
               </div>
             </div>
             <div>
-              <h3 className="text-lg font-bold mb-4">Catégories</h3>
+              <h3 className="text-lg font-bold mb-4">{t('categories')}</h3>
               <ul className="space-y-2">
                 {categories.slice(0, 5).map((category) => (
                   <li key={category.id}>
@@ -340,60 +366,72 @@ export default function StoreLayout({ children }) {
               </ul>
             </div>
             <div>
-              <h3 className="text-lg font-bold mb-4">Liens rapides</h3>
+              <h3 className="text-lg font-bold mb-4">{t('quickLinks')}</h3>
               <ul className="space-y-2">
                 <li>
                   <Link href="/about" className="text-gray-400 hover:text-white transition-colors">
-                    À propos
+                    {t('about')}
                   </Link>
                 </li>
                 <li>
                   <Link href="/contact" className="text-gray-400 hover:text-white transition-colors">
-                    Contact
+                    {t('contact')}
                   </Link>
                 </li>
                 <li>
                   <Link href="/faq" className="text-gray-400 hover:text-white transition-colors">
-                    FAQ
+                    {t('faq')}
                   </Link>
                 </li>
                 <li>
                   <Link href="/terms" className="text-gray-400 hover:text-white transition-colors">
-                    Conditions d'utilisation
+                    {t('termsOfUse')}
                   </Link>
                 </li>
                 <li>
                   <Link href="/privacy" className="text-gray-400 hover:text-white transition-colors">
-                    Politique de confidentialité
+                    {t('privacyPolicy')}
                   </Link>
                 </li>
               </ul>
             </div>
             <div>
-              <h3 className="text-lg font-bold mb-4">Newsletter</h3>
+              <h3 className="text-lg font-bold mb-4">{t('newsletter')}</h3>
               <p className="text-gray-400 mb-4">
-                Inscrivez-vous pour recevoir nos dernières offres et promotions.
+                {t('newsletterText')}
               </p>
               <form className="space-y-2">
                 <input
                   type="email"
-                  placeholder="Votre adresse e-mail"
+                  placeholder={t('emailPlaceholder')}
                   className="w-full px-4 py-2 rounded-md bg-gray-800 border border-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-orange-500"
                 />
                 <button
                   type="submit"
                   className="w-full px-4 py-2 bg-orange-600 hover:bg-orange-700 text-white font-medium rounded-md transition-colors"
                 >
-                  S'inscrire
+                  {t('subscribe')}
                 </button>
               </form>
             </div>
           </div>
           <div className="mt-8 pt-8 border-t border-gray-800 text-center text-gray-400">
-            <p>&copy; {new Date().getFullYear()} PENVENTORY. Tous droits réservés.</p>
+            <p>&copy; {new Date().getFullYear()} PENVENTORY. {t('allRightsReserved')}</p>
           </div>
         </div>
       </footer>
+
+      {/* Composant de chat support client */}
+      <ChatSupport />
     </div>
+  );
+}
+
+// Wrapper avec le LanguageProvider
+export default function StoreLayout({ children }) {
+  return (
+    <LanguageProvider>
+      <StoreLayoutContent>{children}</StoreLayoutContent>
+    </LanguageProvider>
   );
 }

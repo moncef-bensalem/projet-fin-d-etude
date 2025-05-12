@@ -97,10 +97,12 @@ model Order {
   total           Float
   updatedAt       DateTime @db.Date
   promotionId     String?  @db.ObjectId
+  isRated         Boolean  @default(false)
   
   items           OrderItem[]
   promotion       Promotion? @relation(fields: [promotionId], references: [id])
   customer        User      @relation("CustomerOrders", fields: [customerId], references: [id])
+  rating          OrderRating?
 }
 
 model OrderItem {
@@ -141,6 +143,7 @@ model Product {
   updatedAt   DateTime @db.Date
   
   category    Category @relation(fields: [categoryId], references: [id])
+  produitAssociations ProduitBesoin[]
   store       Store    @relation(fields: [storeId], references: [id])
   orderItems  OrderItem[]
 }
@@ -266,6 +269,11 @@ model User {
   sentTransactions  Transaction[] @relation("SentTransactions")
   receivedTransactions Transaction[] @relation("ReceivedTransactions")
   wallet            Wallet?
+  produitAssociations ProduitBesoin[]
+  orderRatings      OrderRating[]
+  customerTickets   SupportTicket[] @relation("CustomerTickets")
+  assignedTickets   SupportTicket[] @relation("AssignedTickets")
+  ticketMessages    TicketMessage[]
 }
 
 model VerificationToken {
@@ -299,4 +307,66 @@ model Besoin {
   listeId     String   @db.ObjectId
   
   liste       ListeScolaire @relation(fields: [listeId], references: [id], onDelete: Cascade)
+  produitAssociations ProduitBesoin[]
+}
+
+model ProduitBesoin {
+  id                 String   @id @default(auto()) @map("_id") @db.ObjectId
+  besoinId           String   @db.ObjectId
+  produitId          String   @db.ObjectId
+  sellerId           String   @db.ObjectId
+  prix               Float
+  quantiteDisponible Int
+  validated          Boolean  @default(false)
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+  
+  besoin             Besoin   @relation(fields: [besoinId], references: [id], onDelete: Cascade)
+  produit            Product  @relation(fields: [produitId], references: [id], onDelete: Cascade)
+  seller             User     @relation(fields: [sellerId], references: [id], onDelete: Cascade)
+  
+  @@unique([besoinId, produitId, sellerId])
+}
+
+model OrderRating {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  orderId   String   @unique @db.ObjectId
+  userId    String   @db.ObjectId
+  rating    Int      // Note de 1 à 5
+  comment   String?  // Commentaire optionnel
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  order     Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model SupportTicket {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  subject     String
+  description String
+  status      String   // "OPEN", "PENDING", "RESOLVED", "CLOSED"
+  priority    String   // "LOW", "MEDIUM", "HIGH", "URGENT"
+  category    String   // "PAYMENT", "SHIPPING", "PRODUCT", "ACCOUNT", "OTHER"
+  customerId  String   @db.ObjectId
+  assignedToId String? @db.ObjectId
+  orderNumber String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  customer    User     @relation("CustomerTickets", fields: [customerId], references: [id])
+  assignedTo  User?    @relation("AssignedTickets", fields: [assignedToId], references: [id])
+  messages    TicketMessage[]
+}
+
+model TicketMessage {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  content   String
+  ticketId  String   @db.ObjectId
+  senderId  String   @db.ObjectId
+  createdAt DateTime @default(now())
+  attachments String[] // URLs des pièces jointes
+  
+  ticket    SupportTicket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  sender    User     @relation(fields: [senderId], references: [id])
 }

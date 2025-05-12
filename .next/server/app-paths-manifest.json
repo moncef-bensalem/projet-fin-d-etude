@@ -1,10 +1,12 @@
 {
+  "/api/all-products-admin/route": "app/api/all-products-admin/route.js",
+  "/api/stores/route": "app/api/stores/route.js",
+  "/api/categories/route": "app/api/categories/route.js",
   "/api/auth/[...nextauth]/route": "app/api/auth/[...nextauth]/route.js",
-  "/api/seller/access/route": "app/api/seller/access/route.js",
-  "/api/seller/earnings/route": "app/api/seller/earnings/route.js",
-  "/dashboard/sellers/page": "app/dashboard/sellers/page.js",
+  "/api/products/route": "app/api/products/route.js",
+  "/(front-end)/page": "app/(front-end)/page.js",
+  "/(front-end)/products/page": "app/(front-end)/products/page.js",
   "/seller/dashboard/page": "app/seller/dashboard/page.js",
-  "/dashboard/sellers/[id]/page": "app/dashboard/sellers/[id]/page.js",
-  "/seller/dashboard/products/page": "app/seller/dashboard/products/page.js",
-  "/seller/dashboard/products/new/page": "app/seller/dashboard/products/new/page.js"
+  "/(front-end)/cart/page": "app/(front-end)/cart/page.js",
+  "/seller/dashboard/promotions/page": "app/seller/dashboard/promotions/page.js"
 }

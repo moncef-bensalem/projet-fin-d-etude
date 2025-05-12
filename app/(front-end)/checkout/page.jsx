@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { ChevronRight, CreditCard, Truck, ShieldCheck } from 'lucide-react';
+import { ChevronRight, CreditCard, Truck, ShieldCheck, X, CreditCard as CardIcon, Banknote } from 'lucide-react';
 
 export default function CheckoutPage() {
   const router = useRouter();
@@ -23,9 +23,16 @@ export default function CheckoutPage() {
     address: '',
     city: '',
     postalCode: '',
-    country: 'France',
+    country: 'Tunisie',
     paymentMethod: 'card',
     saveInfo: true
+  });
+  
+  const [showCardModal, setShowCardModal] = useState(false);
+  const [cardData, setCardData] = useState({
+    cardNumber: '',
+    expiryDate: '',
+    cvv: ''
   });
   const [errors, setErrors] = useState({});
   const [orderProcessing, setOrderProcessing] = useState(false);
@@ -116,8 +123,12 @@ export default function CheckoutPage() {
       newErrors.email = 'Adresse email invalide';
     }
     
-    // Validation code postal français
-    if (formData.postalCode && !/^\d{5}$/.test(formData.postalCode)) {
+    // Validation code postal selon le pays
+    if (formData.country === 'Tunisie') {
+      if (formData.postalCode && !/^\d{4}$/.test(formData.postalCode)) {
+        newErrors.postalCode = 'Code postal tunisien invalide (4 chiffres)';
+      }
+    } else if (formData.postalCode && !/^\d{5}$/.test(formData.postalCode)) {
       newErrors.postalCode = 'Code postal invalide (5 chiffres)';
     }
     
@@ -129,6 +140,12 @@ export default function CheckoutPage() {
     e.preventDefault();
     
     if (!validateForm()) {
+      return;
+    }
+    
+    // Si le mode de paiement est par carte et que la modale n'a pas été complétée
+    if (formData.paymentMethod === 'card' && !cardData.cardNumber) {
+      setShowCardModal(true);
       return;
     }
     
@@ -409,10 +426,10 @@ export default function CheckoutPage() {
                         onChange={handleInputChange}
                         className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-orange-500 focus:border-orange-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                       >
+                        <option value="Tunisie">Tunisie</option>
                         <option value="France">France</option>
-                        <option value="Belgique">Belgique</option>
-                        <option value="Suisse">Suisse</option>
-                        <option value="Luxembourg">Luxembourg</option>
+                        <option value="Maroc">Maroc</option>
+                        <option value="Algérie">Algérie</option>
                       </select>
                     </div>
                   </div>
@@ -421,95 +438,92 @@ export default function CheckoutPage() {
               
               {/* Méthode de paiement */}
               <div className="mb-8">
-                <h2 className="text-lg font-bold text-gray-900 dark:text-white mb-4">Méthode de paiement</h2>
-                <div className="space-y-3">
-                  <div className="flex items-center">
-                    <input
-                      type="radio"
-                      id="card"
-                      name="paymentMethod"
-                      value="card"
-                      checked={formData.paymentMethod === 'card'}
-                      onChange={handleInputChange}
-                      className="h-4 w-4 text-orange-600 focus:ring-orange-500 border-gray-300"
-                    />
-                    <label htmlFor="card" className="ml-3 flex items-center">
-                      <span className="text-gray-700 dark:text-gray-300 mr-2">Carte bancaire</span>
-                      <div className="flex space-x-1">
-                        <div className="w-8 h-5 bg-blue-600 rounded"></div>
-                        <div className="w-8 h-5 bg-red-500 rounded"></div>
-                        <div className="w-8 h-5 bg-gray-800 rounded"></div>
-                      </div>
-                    </label>
+                <h2 className="text-lg font-bold text-gray-900 dark:text-white mb-4">Mode de paiement</h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {/* Option Carte Bancaire */}
+                  <div 
+                    className={`border rounded-lg p-4 flex items-center cursor-pointer transition-all ${formData.paymentMethod === 'card' ? 'border-orange-500 bg-orange-50 dark:bg-gray-700' : 'border-gray-200 dark:border-gray-700'}`}
+                    onClick={() => setFormData({...formData, paymentMethod: 'card'})}
+                  >
+                    <div className="flex-shrink-0 w-12 h-12 flex items-center justify-center bg-white rounded-md shadow-sm">
+                      <CardIcon className="h-6 w-6 text-gray-600" />
+                    </div>
+                    <div className="ml-4">
+                      <h3 className="font-medium text-gray-900 dark:text-white">Paiement par carte Bancaire</h3>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">Visa, Mastercard</p>
+                    </div>
+                    <div className="ml-auto">
+                      <input
+                        type="radio"
+                        id="card"
+                        name="paymentMethod"
+                        value="card"
+                        checked={formData.paymentMethod === 'card'}
+                        onChange={() => {}}
+                        className="h-4 w-4 text-orange-600 focus:ring-orange-500 border-gray-300"
+                      />
+                    </div>
                   </div>
-                  <div className="flex items-center">
-                    <input
-                      type="radio"
-                      id="paypal"
-                      name="paymentMethod"
-                      value="paypal"
-                      checked={formData.paymentMethod === 'paypal'}
-                      onChange={handleInputChange}
-                      className="h-4 w-4 text-orange-600 focus:ring-orange-500 border-gray-300"
-                    />
-                    <label htmlFor="paypal" className="ml-3 text-gray-700 dark:text-gray-300">
-                      PayPal
-                    </label>
+                  
+                  {/* Option Espèce à la livraison */}
+                  <div 
+                    className={`border rounded-lg p-4 flex items-center cursor-pointer transition-all ${formData.paymentMethod === 'cash' ? 'border-orange-500 bg-orange-50 dark:bg-gray-700' : 'border-gray-200 dark:border-gray-700'}`}
+                    onClick={() => setFormData({...formData, paymentMethod: 'cash'})}
+                  >
+                    <div className="flex-shrink-0 w-12 h-12 flex items-center justify-center bg-white rounded-md shadow-sm">
+                      <Banknote className="h-6 w-6 text-gray-600" />
+                    </div>
+                    <div className="ml-4">
+                      <h3 className="font-medium text-gray-900 dark:text-white">Espèce à la livraison</h3>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">Paiement à la réception</p>
+                    </div>
+                    <div className="ml-auto">
+                      <input
+                        type="radio"
+                        id="cash"
+                        name="paymentMethod"
+                        value="cash"
+                        checked={formData.paymentMethod === 'cash'}
+                        onChange={() => {}}
+                        className="h-4 w-4 text-orange-600 focus:ring-orange-500 border-gray-300"
+                      />
+                    </div>
                   </div>
                 </div>
                 
                 {formData.paymentMethod === 'card' && (
                   <div className="mt-4 p-4 border border-gray-200 dark:border-gray-700 rounded-md">
-                    <div className="space-y-4">
-                      <div>
-                        <label htmlFor="cardNumber" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                          Numéro de carte
-                        </label>
-                        <div className="relative">
-                          <input
-                            type="text"
-                            id="cardNumber"
-                            placeholder="1234 5678 9012 3456"
-                            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-orange-500 focus:border-orange-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                          />
-                          <CreditCard className="absolute right-3 top-2.5 h-5 w-5 text-gray-400" />
-                        </div>
-                      </div>
-                      <div className="grid grid-cols-2 gap-4">
+                    {cardData.cardNumber ? (
+                      <div className="flex items-center justify-between">
                         <div>
-                          <label htmlFor="expiryDate" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                            Date d'expiration
-                          </label>
-                          <input
-                            type="text"
-                            id="expiryDate"
-                            placeholder="MM/AA"
-                            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-orange-500 focus:border-orange-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                          />
+                          <p className="text-sm font-medium text-gray-700 dark:text-gray-300">Carte enregistrée</p>
+                          <p className="text-sm text-gray-500 dark:text-gray-400">
+                            **** **** **** {cardData.cardNumber.slice(-4)}
+                          </p>
                         </div>
-                        <div>
-                          <label htmlFor="cvv" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                            CVV
-                          </label>
-                          <input
-                            type="text"
-                            id="cvv"
-                            placeholder="123"
-                            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-orange-500 focus:border-orange-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                          />
-                        </div>
+                        <button
+                          type="button"
+                          onClick={() => setShowCardModal(true)}
+                          className="px-3 py-1 text-sm bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-md transition-colors"
+                        >
+                          Modifier
+                        </button>
                       </div>
-                      <div>
-                        <label htmlFor="cardName" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                          Nom sur la carte
-                        </label>
-                        <input
-                          type="text"
-                          id="cardName"
-                          className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-orange-500 focus:border-orange-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                        />
-                      </div>
-                    </div>
+                    ) : (
+                      <>
+                        <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                          Vos informations de paiement sont sécurisées. Cliquez sur le bouton ci-dessous pour saisir vos coordonnées bancaires.
+                        </p>
+                        <button
+                          type="button"
+                          onClick={() => setShowCardModal(true)}
+                          className="w-full md:w-auto px-6 py-2 bg-orange-600 text-white font-medium rounded-md hover:bg-orange-700 transition-colors flex items-center justify-center"
+                        >
+                          <CreditCard className="h-5 w-5 mr-2" />
+                          Saisir mes informations bancaires
+                        </button>
+                      </>
+                    )}
                   </div>
                 )}
               </div>
@@ -633,6 +647,129 @@ export default function CheckoutPage() {
           </div>
         </div>
       </div>
+
+      {/* Modal pour la saisie des informations de carte bancaire */}
+      {showCardModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+          <div className="relative bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full p-6 mx-4">
+            <button
+              onClick={() => setShowCardModal(false)}
+              className="absolute top-3 right-3 text-gray-400 hover:text-gray-500"
+            >
+              <X className="h-5 w-5" />
+            </button>
+            
+            <h2 className="text-xl font-semibold text-center mb-6 text-gray-900 dark:text-white">Crédit / Débit</h2>
+            
+            <form onSubmit={(e) => {
+              e.preventDefault();
+              // Validation des données de carte
+              let isValid = true;
+              const newCardData = {...cardData};
+              
+              // Formater le numéro de carte (ajouter des espaces tous les 4 chiffres)
+              if (newCardData.cardNumber) {
+                newCardData.cardNumber = newCardData.cardNumber.replace(/\s/g, '').replace(/(.{4})/g, '$1 ').trim();
+              }
+              
+              // Formater la date d'expiration (ajouter un slash entre le mois et l'année)
+              if (newCardData.expiryDate && !newCardData.expiryDate.includes('/')) {
+                if (newCardData.expiryDate.length === 4) {
+                  newCardData.expiryDate = `${newCardData.expiryDate.slice(0, 2)}/${newCardData.expiryDate.slice(2)}`;
+                }
+              }
+              
+              setCardData(newCardData);
+              
+              if (isValid) {
+                setShowCardModal(false);
+              }
+            }} className="space-y-4">
+              <div>
+                <label htmlFor="cardNumber" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Numéro de Carte de Crédit
+                </label>
+                <div className="relative">
+                  <input
+                    type="text"
+                    id="cardNumber"
+                    value={cardData.cardNumber}
+                    onChange={(e) => {
+                      // Ne garder que les chiffres
+                      const value = e.target.value.replace(/[^0-9]/g, '');
+                      // Limiter à 16 chiffres
+                      if (value.length <= 16) {
+                        setCardData({...cardData, cardNumber: value});
+                      }
+                    }}
+                    placeholder="0000 0000 0000 0000"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-orange-500 focus:border-orange-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                    required
+                  />
+                  <div className="absolute right-3 top-2">
+                    <div className="flex space-x-1">
+                      <div className="w-8 h-5 bg-red-500 rounded flex items-center justify-center text-white text-xs">MC</div>
+                      <div className="w-8 h-5 bg-blue-600 rounded flex items-center justify-center text-white text-xs">VISA</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label htmlFor="expiryDate" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    Mois / Année
+                  </label>
+                  <input
+                    type="text"
+                    id="expiryDate"
+                    value={cardData.expiryDate}
+                    onChange={(e) => {
+                      // Ne garder que les chiffres
+                      const value = e.target.value.replace(/[^0-9/]/g, '');
+                      // Limiter à 5 caractères (MM/YY)
+                      if (value.length <= 5) {
+                        setCardData({...cardData, expiryDate: value});
+                      }
+                    }}
+                    placeholder="MM/AA"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-orange-500 focus:border-orange-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                    required
+                  />
+                </div>
+                <div>
+                  <label htmlFor="cvv" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    CVV
+                  </label>
+                  <input
+                    type="text"
+                    id="cvv"
+                    value={cardData.cvv}
+                    onChange={(e) => {
+                      // Ne garder que les chiffres
+                      const value = e.target.value.replace(/[^0-9]/g, '');
+                      // Limiter à 3 ou 4 chiffres
+                      if (value.length <= 4) {
+                        setCardData({...cardData, cvv: value});
+                      }
+                    }}
+                    placeholder="XXX"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-orange-500 focus:border-orange-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                    required
+                  />
+                </div>
+              </div>
+              
+              <button
+                type="submit"
+                className="w-full py-3 mt-4 bg-green-500 hover:bg-green-600 text-white font-medium rounded-md transition-colors"
+              >
+                Payer {total.toFixed(2)} DT
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

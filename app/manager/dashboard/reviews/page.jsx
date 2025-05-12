@@ -58,16 +58,43 @@ export default function ManagerReviewsPage() {
   const fetchReviews = async () => {
     try {
       setLoading(true);
-      // En développement, utiliser des données fictives
-      const demoReviews = generateDemoReviews();
-      setReviews(demoReviews);
+      
+      // Récupérer les vraies évaluations de commandes depuis l'API
+      const response = await fetch('/api/order-ratings');
+      
+      if (!response.ok) {
+        throw new Error(`Erreur HTTP: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      
+      // Transformer les données pour correspondre au format attendu par le tableau
+      const formattedReviews = data.map(rating => ({
+        id: rating.id,
+        userId: rating.userId,
+        userName: rating.user?.name || 'Client',
+        orderId: rating.orderId,
+        productName: `Commande #${rating.orderId}`,
+        rating: rating.rating,
+        content: rating.comment || '(Pas de commentaire)',
+        status: 'APPROVED', // Par défaut, les évaluations sont approuvées
+        createdAt: new Date(rating.createdAt),
+        reportCount: 0
+      }));
+      
+      setReviews(formattedReviews);
       
       // Calculer le résumé des avis
-      calculateReviewSummary(demoReviews);
+      calculateReviewSummary(formattedReviews);
       
     } catch (error) {
       console.error('Error fetching reviews:', error);
       toast.error('Erreur lors de la récupération des avis');
+      
+      // En cas d'erreur, utiliser des données de démonstration
+      const demoReviews = generateDemoReviews();
+      setReviews(demoReviews);
+      calculateReviewSummary(demoReviews);
     } finally {
       setLoading(false);
     }
@@ -188,11 +215,15 @@ export default function ManagerReviewsPage() {
       }
       
       // Filtre par recherche (contenu, produit ou client)
-      if (filters.search && 
-         !(review.content?.toLowerCase().includes(filters.search.toLowerCase()) || 
-           review.product.name.toLowerCase().includes(filters.search.toLowerCase()) ||
-           review.customer.name.toLowerCase().includes(filters.search.toLowerCase()))) {
-        return false;
+      if (filters.search) {
+        const searchLower = filters.search.toLowerCase();
+        const contentMatch = review.content?.toLowerCase().includes(searchLower);
+        const productMatch = review.productName?.toLowerCase().includes(searchLower);
+        const userMatch = review.userName?.toLowerCase().includes(searchLower);
+        
+        if (!(contentMatch || productMatch || userMatch)) {
+          return false;
+        }
       }
       
       // Filtre par date de début
@@ -282,14 +313,21 @@ export default function ManagerReviewsPage() {
     return (
       <div className="flex items-center">
         {Array.from({ length: 5 }).map((_, index) => (
-          <Star 
-            key={index} 
-            className={`h-4 w-4 ${index < rating ? 'text-yellow-400 fill-yellow-400' : 'text-gray-300'}`} 
+          <Star
+            key={index}
+            className={`h-4 w-4 ${index < rating ? 'text-yellow-400 fill-yellow-400' : 'text-gray-300'}`}
           />
         ))}
-        <span className="ml-1 text-sm font-medium">{rating}</span>
+        <span className="ml-1 text-sm text-gray-600">{rating}/5</span>
       </div>
     );
+  };
+  
+  // Formater la date
+  const formatDate = (dateString) => {
+    if (!dateString) return "";
+    const date = new Date(dateString);
+    return format(date, 'dd MMMM yyyy', { locale: fr });
   };
 
   const columns = [
@@ -297,7 +335,7 @@ export default function ManagerReviewsPage() {
       accessorKey: "status",
       header: "Statut",
       cell: ({ row }) => {
-        const status = row.original.status;
+        const status = row.original.status || 'APPROVED';
         return (
           <Badge className={getStatusBadgeClass(status)}>
             <div className="flex items-center">
@@ -315,42 +353,37 @@ export default function ManagerReviewsPage() {
     },
     {
       accessorKey: "content",
-      header: "Contenu",
+      header: "Commentaire",
       cell: ({ row }) => (
         <div className="max-w-[300px] truncate" title={row.original.content}>
-          {row.original.containsBadWords && (
-            <span className="mr-2">
-              <ShieldAlert className="inline h-4 w-4 text-red-500" title="Contient des mots inappropriés" />
-            </span>
-          )}
-          {row.original.content}
+          {row.original.content || '(Pas de commentaire)'}
         </div>
       ),
     },
     {
-      accessorKey: "product.name",
-      header: "Produit",
+      accessorKey: "orderId",
+      header: "Commande",
       cell: ({ row }) => (
         <div className="flex items-center gap-2">
           <ShoppingBag className="h-4 w-4" />
-          <span className="max-w-[150px] truncate" title={row.original.product.name}>
-            {row.original.product.name}
+          <span className="max-w-[150px] truncate">
+            Commande #{row.original.orderId}
           </span>
         </div>
       ),
     },
     {
-      accessorKey: "customer.name",
+      accessorKey: "userName",
       header: "Client",
       cell: ({ row }) => (
         <div className="flex items-center gap-2">
           <User className="h-4 w-4" />
-          <span>{row.original.customer.name}</span>
+          <span>{row.original.userName || 'Client'}</span>
         </div>
       ),
     },
     {
-      accessorKey: "formattedCreatedAt",
+      accessorKey: "createdAt",
       header: ({ column }) => (
         <div className="flex items-center">
           Date
@@ -360,57 +393,25 @@ export default function ManagerReviewsPage() {
           />
         </div>
       ),
-    },
-    {
-      accessorKey: "reportCount",
-      header: "Signalements",
-      cell: ({ row }) => {
-        const count = row.original.reportCount;
-        return count > 0 ? (
-          <Badge variant="outline" className="bg-red-50 text-red-700 border-red-200">
-            {count}
-          </Badge>
-        ) : (
-          <span>0</span>
-        );
-      },
+      cell: ({ row }) => formatDate(row.original.createdAt),
     },
     {
       id: "actions",
       header: "Actions",
       cell: ({ row }) => {
         const review = row.original;
-        const isPending = review.status === 'PENDING' || review.status === 'REPORTED';
         
         return (
           <div className="flex items-center gap-2">
-            {isPending && (
-              <>
-                <Button 
-                  variant="outline" 
-                  size="icon"
-                  className="h-8 w-8 bg-green-50 hover:bg-green-100 text-green-700 border-green-200"
-                  onClick={() => approveReview(review.id)}
-                  title="Approuver"
-                >
-                  <Check className="h-4 w-4" />
-                </Button>
-                <Button 
-                  variant="outline" 
-                  size="icon"
-                  className="h-8 w-8 bg-red-50 hover:bg-red-100 text-red-700 border-red-200"
-                  onClick={() => rejectReview(review.id)}
-                  title="Rejeter"
-                >
-                  <X className="h-4 w-4" />
-                </Button>
-              </>
-            )}
             <Button 
               variant="outline" 
               size="icon"
               className="h-8 w-8"
               title="Voir détails"
+              onClick={() => {
+                // Afficher les détails de l'évaluation
+                toast.success(`Détails de l'évaluation pour la commande #${review.orderId}`);
+              }}
             >
               <Eye className="h-4 w-4" />
             </Button>
@@ -570,25 +571,6 @@ export default function ManagerReviewsPage() {
               </div>
               
               <div>
-                <label htmlFor="reportCount" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Minimum de signalements
-                </label>
-                <select
-                  id="reportCount"
-                  value={filters.reportCount}
-                  onChange={(e) => setFilters({...filters, reportCount: e.target.value})}
-                  className="w-full p-2 border rounded-md"
-                >
-                  <option value="">Tous</option>
-                  <option value="1">1+</option>
-                  <option value="2">2+</option>
-                  <option value="3">3+</option>
-                  <option value="4">4+</option>
-                  <option value="5">5+</option>
-                </select>
-              </div>
-              
-              <div>
                 <label htmlFor="search" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   Recherche
                 </label>
@@ -597,7 +579,7 @@ export default function ManagerReviewsPage() {
                   <input
                     id="search"
                     type="text"
-                    placeholder="Contenu, produit, client..."
+                    placeholder="Commentaire, commande, client..."
                     value={filters.search}
                     onChange={(e) => setFilters({...filters, search: e.target.value})}
                     className="pl-8 w-full p-2 border rounded-md"
@@ -660,4 +642,4 @@ export default function ManagerReviewsPage() {
       </div>
     </div>
   );
-} 
+}

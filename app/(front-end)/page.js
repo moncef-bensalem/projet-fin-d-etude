@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { useLanguage } from '@/context/language-context';
 import { ArrowRight, Star, TrendingUp, Award, ShoppingBag } from 'lucide-react';
 import { BannerSlider } from '@/components/ui/banner-slider';
 
@@ -25,8 +26,11 @@ const PenCategory = ({ name, image, slug }) => (
 );
 
 // Composant pour les produits en vedette
-const FeaturedProduct = ({ product }) => {
+const FeaturedProduct = ({ product, t }) => {
   const [isHovered, setIsHovered] = useState(false);
+  
+  // Ajouter la fonction de traduction au produit pour l'utiliser dans le composant
+  product.t = t;
   
   return (
     <div 
@@ -48,7 +52,7 @@ const FeaturedProduct = ({ product }) => {
         )}
         <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-4 translate-y-full group-hover:translate-y-0 transition-transform">
           <button className="w-full bg-orange-600 hover:bg-orange-700 text-white py-2 rounded-md font-medium text-sm transition-colors">
-            Ajouter au panier
+            {product.t('homeAddToCart')}
           </button>
         </div>
       </div>
@@ -59,7 +63,7 @@ const FeaturedProduct = ({ product }) => {
             <span className="ml-1 text-sm font-medium text-gray-700 dark:text-gray-300">{product.rating}</span>
           </div>
           <span className="mx-2 text-gray-300">•</span>
-          <span className="text-xs text-gray-500">{product.reviewCount} avis</span>
+          <span className="text-xs text-gray-500">{product.reviewCount} {product.t('homeReviews')}</span>
         </div>
         <h3 className="font-medium text-gray-900 dark:text-white mb-1 line-clamp-1">{product.name}</h3>
         <p className="text-sm text-gray-500 dark:text-gray-400 mb-2 line-clamp-1">{product.brand}</p>
@@ -75,9 +79,9 @@ const FeaturedProduct = ({ product }) => {
             )}
           </div>
           {product.stock <= 5 && product.stock > 0 ? (
-            <span className="text-xs text-orange-600 font-medium">Plus que {product.stock} en stock</span>
+            <span className="text-xs text-orange-600 font-medium">{product.t('homeLowStock').replace('{stock}', product.stock)}</span>
           ) : product.stock === 0 ? (
-            <span className="text-xs text-red-600 font-medium">Rupture de stock</span>
+            <span className="text-xs text-red-600 font-medium">{product.t('homeOutOfStock')}</span>
           ) : null}
         </div>
       </div>
@@ -93,6 +97,7 @@ const BrandLogo = ({ logo, name }) => (
 );
 
 export default function Home() {
+  const { t } = useLanguage();
   const [categories, setCategories] = useState([]);
   const [featuredProducts, setFeaturedProducts] = useState([]);
   const [brands, setBrands] = useState([]);
@@ -116,15 +121,15 @@ export default function Home() {
         const data = await response.json();
         setCategories(data || []);
       } else {
-        console.error("Erreur lors de la récupération des catégories");
+        console.error(t('errorCategories'));
         // Utiliser des catégories par défaut en cas d'erreur
         setCategories([
-          { id: 1, name: 'Stylos de luxe', slug: 'stylos-de-luxe', image: '/images/luxury-pens.jpg' },
-          { id: 2, name: 'Stylos à plume', slug: 'stylos-a-plume', image: '/images/fountain-pens.jpg' },
-          { id: 3, name: 'Stylos à bille', slug: 'stylos-a-bille', image: '/images/ballpoint-pens.jpg' },
-          { id: 4, name: 'Stylos rollers', slug: 'stylos-rollers', image: '/images/rollerball-pens.jpg' },
-          { id: 5, name: 'Crayons & Porte-mines', slug: 'crayons-porte-mines', image: '/images/pencils.jpg' },
-          { id: 6, name: 'Accessoires d\'écriture', slug: 'accessoires-ecriture', image: '/images/writing-accessories.jpg' },
+          { id: 1, name: t('defaultCategory1'), slug: 'stylos-de-luxe', image: '/images/luxury-pens.jpg' },
+          { id: 2, name: t('defaultCategory2'), slug: 'stylos-a-plume', image: '/images/fountain-pens.jpg' },
+          { id: 3, name: t('defaultCategory3'), slug: 'stylos-a-bille', image: '/images/ballpoint-pens.jpg' },
+          { id: 4, name: t('defaultCategory4'), slug: 'stylos-rollers', image: '/images/rollerball-pens.jpg' },
+          { id: 5, name: t('defaultCategory5'), slug: 'crayons-porte-mines', image: '/images/pencils.jpg' },
+          { id: 6, name: t('defaultCategory6'), slug: 'accessoires-ecriture', image: '/images/writing-accessories.jpg' },
         ]);
       }
     } catch (error) {
@@ -145,7 +150,7 @@ export default function Home() {
         
         setFeaturedProducts(featuredProductsData);
       } else {
-        console.error("Erreur lors de la récupération des produits en vedette");
+        console.error(t('errorProducts'));
         // Utiliser des produits par défaut en cas d'erreur
         setFeaturedProducts([
           {
@@ -215,7 +220,7 @@ export default function Home() {
         }));
         setBrands(brandsData);
       } else {
-        console.error("Erreur lors de la récupération des marques");
+        console.error(t('errorBrands'));
         // Utiliser des marques par défaut en cas d'erreur
         setBrands([
           { id: 1, name: 'Montblanc', logo: '/images/montblanc-logo.png' },
@@ -241,12 +246,12 @@ export default function Home() {
       {/* Catégories */}
       <section>
         <div className="flex justify-between items-center mb-6">
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Catégories de stylos</h2>
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white">{t('homeCategories')}</h2>
           <Link 
             href="/categories" 
             className="text-orange-600 hover:text-orange-700 flex items-center gap-1"
           >
-            Voir tout
+            {t('homeViewAll')}
             <ArrowRight className="h-4 w-4" />
           </Link>
         </div>
@@ -266,14 +271,14 @@ export default function Home() {
       <section>
         <div className="flex justify-between items-center mb-6">
           <div>
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Produits en vedette</h2>
-            <p className="text-gray-600 dark:text-gray-400">Découvrez notre sélection de stylos de luxe</p>
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white">{t('homeFeaturedProducts')}</h2>
+            <p className="text-gray-600 dark:text-gray-400">{t('homeFeaturedProductsSubtitle')}</p>
           </div>
           <Link 
             href="/products" 
             className="text-orange-600 hover:text-orange-700 flex items-center gap-1"
           >
-            Voir tout
+            {t('homeViewAll')}
             <ArrowRight className="h-4 w-4" />
           </Link>
         </div>
@@ -291,7 +296,7 @@ export default function Home() {
             ))
           ) : (
             featuredProducts.map((product) => (
-              <FeaturedProduct key={product.id} product={product} />
+              <FeaturedProduct key={product.id} product={product} t={t} />
             ))
           )}
         </div>
@@ -301,8 +306,8 @@ export default function Home() {
       <section>
         <div className="flex justify-between items-center mb-6">
           <div>
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Nos marques partenaires</h2>
-            <p className="text-gray-600 dark:text-gray-400">Les plus grandes marques nous font confiance</p>
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white">{t('homeBrands')}</h2>
+            <p className="text-gray-600 dark:text-gray-400">{t('homeBrandsSubtitle')}</p>
           </div>
         </div>
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
@@ -319,8 +324,8 @@ export default function Home() {
             <TrendingUp className="h-6 w-6 text-orange-600 dark:text-orange-400" />
           </div>
           <div>
-            <h3 className="font-semibold text-gray-900 dark:text-white">Qualité premium</h3>
-            <p className="text-sm text-gray-600 dark:text-gray-400">Sélection rigoureuse des produits</p>
+            <h3 className="font-semibold text-gray-900 dark:text-white">{t('homeAdvantage1Title')}</h3>
+            <p className="text-sm text-gray-600 dark:text-gray-400">{t('homeAdvantage1Subtitle')}</p>
           </div>
         </div>
         <div className="flex items-center gap-4 p-6 bg-white dark:bg-gray-800 rounded-lg shadow-sm">
@@ -328,8 +333,8 @@ export default function Home() {
             <Award className="h-6 w-6 text-orange-600 dark:text-orange-400" />
           </div>
           <div>
-            <h3 className="font-semibold text-gray-900 dark:text-white">Garantie authentique</h3>
-            <p className="text-sm text-gray-600 dark:text-gray-400">Produits 100% authentiques</p>
+            <h3 className="font-semibold text-gray-900 dark:text-white">{t('homeAdvantage2Title')}</h3>
+            <p className="text-sm text-gray-600 dark:text-gray-400">{t('homeAdvantage2Subtitle')}</p>
           </div>
         </div>
         <div className="flex items-center gap-4 p-6 bg-white dark:bg-gray-800 rounded-lg shadow-sm">
@@ -337,8 +342,8 @@ export default function Home() {
             <ShoppingBag className="h-6 w-6 text-orange-600 dark:text-orange-400" />
           </div>
           <div>
-            <h3 className="font-semibold text-gray-900 dark:text-white">Livraison rapide</h3>
-            <p className="text-sm text-gray-600 dark:text-gray-400">Expédition sous 24h</p>
+            <h3 className="font-semibold text-gray-900 dark:text-white">{t('homeAdvantage3Title')}</h3>
+            <p className="text-sm text-gray-600 dark:text-gray-400">{t('homeAdvantage3Subtitle')}</p>
           </div>
         </div>
       </section>

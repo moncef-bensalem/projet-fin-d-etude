@@ -101,41 +101,74 @@ export async function POST(req) {
       
       console.log(`Creating order for store ${storeId}, number: ${orderNumber}, items: ${storeItems.length}`);
       
-      // Créer la commande
-      try {
-        const order = await prisma.order.create({
-          data: {
-            number: orderNumber,
-            status: "PENDING",
-            total: storeTotal,
-            shippingAddress: typeof shippingAddress === 'string' 
-              ? shippingAddress 
-              : JSON.stringify(shippingAddress),
-            customer: {
-              connect: userId ? { id: userId } : undefined,
-              create: !userId && customerInfo ? {
+      // Vérifier si un utilisateur avec cet email existe déjà
+      let customerId = userId;
+      
+      if (!userId && customerInfo && customerInfo.email) {
+        const existingUser = await prisma.user.findUnique({
+          where: { email: customerInfo.email }
+        });
+        
+        if (existingUser) {
+          customerId = existingUser.id;
+          console.log(`Found existing user with email ${customerInfo.email}, ID: ${customerId}`);
+        } else if (customerInfo.email) {
+          // Créer un nouvel utilisateur
+          try {
+            const newUser = await prisma.user.create({
+              data: {
                 name: customerInfo.name,
                 email: customerInfo.email,
                 role: "CUSTOMER",
                 createdAt: new Date(),
                 updatedAt: new Date()
-              } : undefined
-            },
-            storeId: storeId,
-            items: {
-              create: storeItems.map(item => ({
-                quantity: BigInt(item.quantity),
-                price: item.price,
-                product: {
-                  connect: { id: item.productId }
-                },
-                createdAt: new Date(),
-                updatedAt: new Date()
-              }))
-            },
-            createdAt: new Date(),
-            updatedAt: new Date()
+              }
+            });
+            customerId = newUser.id;
+            console.log(`Created new user with email ${customerInfo.email}, ID: ${customerId}`);
+          } catch (userError) {
+            console.error(`Error creating user: ${userError.message}`);
+            // Si la création échoue, continuer sans utilisateur
+            customerId = null;
+          }
+        }
+      }
+      
+      // Créer la commande
+      try {
+        // Préparer les données complètes de la commande
+        const orderData = {
+          number: orderNumber,
+          status: "PENDING",
+          total: storeTotal,
+          shippingAddress: typeof shippingAddress === 'string' 
+            ? shippingAddress 
+            : JSON.stringify(shippingAddress),
+          storeId: storeId,
+          items: {
+            create: storeItems.map(item => ({
+              quantity: BigInt(item.quantity),
+              price: item.price,
+              product: {
+                connect: { id: item.productId }
+              },
+              createdAt: new Date(),
+              updatedAt: new Date()
+            }))
           },
+          createdAt: new Date(),
+          updatedAt: new Date()
+        };
+        
+        // Ajouter la relation avec l'utilisateur seulement si on a un ID
+        if (customerId) {
+          orderData.customer = {
+            connect: { id: customerId }
+          };
+        }
+        
+        const order = await prisma.order.create({
+          data: orderData,
           include: {
             items: true,
             customer: {
@@ -245,11 +278,11 @@ export async function GET(req) {
             }
           }
         },
-        store: {
+        customer: {
           select: {
             id: true,
             name: true,
-            logo: true
+            email: true
           }
         }
       },
