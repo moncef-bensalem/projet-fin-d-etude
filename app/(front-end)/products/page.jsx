@@ -6,6 +6,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { Filter, X, ChevronDown, Grid3X3, List, Search } from 'lucide-react';
 import ProductCard from '../components/ProductCard';
+import { useConfirmation } from '@/hooks/use-confirmation';
 
 export default function ProductsPage() {
   const searchParams = useSearchParams();
@@ -27,6 +28,7 @@ export default function ProductsPage() {
   const [categories, setCategories] = useState([]);
   const [stores, setStores] = useState([]);
   const [educationLevels, setEducationLevels] = useState([]);
+  const { openConfirmation, ConfirmationDialog } = useConfirmation();
   
   // Fonction pour récupérer les produits avec les filtres appliqués
   useEffect(() => {
@@ -168,31 +170,37 @@ export default function ProductsPage() {
   
   // Fonction pour gérer l'ajout au panier
   const handleAddToCart = (product) => {
-    // Récupérer le panier actuel du localStorage
-    const currentCart = JSON.parse(localStorage.getItem('cart') || '[]');
-    
-    // Vérifier si le produit est déjà dans le panier
-    const existingProductIndex = currentCart.findIndex(item => item.id === product.id);
-    
-    if (existingProductIndex >= 0) {
-      // Si le produit existe déjà, augmenter la quantité
-      currentCart[existingProductIndex].quantity += 1;
-    } else {
-      // Sinon, ajouter le produit avec une quantité de 1
-      currentCart.push({
-        ...product,
-        quantity: 1
-      });
-    }
-    
-    // Sauvegarder le panier mis à jour
-    localStorage.setItem('cart', JSON.stringify(currentCart));
-    
-    // Déclencher un événement pour mettre à jour le compteur du panier dans la navigation
-    window.dispatchEvent(new Event('storage'));
-    
-    // Afficher une notification (à implémenter)
-    alert(`${product.name} ajouté au panier`);
+    openConfirmation({
+      title: "Ajouter au panier",
+      message: `Voulez-vous ajouter ${product.name} au panier ?`,
+      confirmText: "Ajouter au panier",
+      cancelText: "Annuler",
+      type: "info",
+      onConfirm: () => {
+        // Récupérer le panier actuel du localStorage
+        const currentCart = JSON.parse(localStorage.getItem('cart') || '[]');
+        
+        // Vérifier si le produit est déjà dans le panier
+        const existingProductIndex = currentCart.findIndex(item => item.id === product.id);
+        
+        if (existingProductIndex >= 0) {
+          // Si le produit existe déjà, augmenter la quantité
+          currentCart[existingProductIndex].quantity += 1;
+        } else {
+          // Sinon, ajouter le produit avec une quantité de 1
+          currentCart.push({
+            ...product,
+            quantity: 1
+          });
+        }
+        
+        // Sauvegarder le panier mis à jour
+        localStorage.setItem('cart', JSON.stringify(currentCart));
+        
+        // Déclencher un événement pour mettre à jour le compteur du panier dans la navigation
+        window.dispatchEvent(new Event('storage'));
+      }
+    });
   };
   
   // Fonction pour réinitialiser les filtres
@@ -455,6 +463,7 @@ export default function ProductsPage() {
           </div>
         </div>
       </div>
+      <ConfirmationDialog />
     </div>
   );
 }

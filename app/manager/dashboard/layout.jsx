@@ -2,6 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/context/auth-context';
+import { LanguageProvider } from '@/context/language-context';
+
 import { useRouter } from 'next/navigation';
 import ManagerSidebar from '@/components/backoffice/ManagerSidebar';
 import { ManagerHeader } from '@/components/backoffice/ManagerHeader';
@@ -41,57 +43,59 @@ export default function ManagerDashboardLayout({ children }) {
   }
 
   return (
-    <div className="h-full relative">
-      {/* Sidebar desktop */}
-      <div className="hidden h-full md:flex md:w-64 md:flex-col md:fixed md:inset-y-0 z-[80]">
-        <ManagerSidebar showSideBar={showSideBar} setShowSideBar={setShowSideBar} />
-      </div>
+    <LanguageProvider>
+        <div className="h-full relative">
+          {/* Sidebar desktop */}
+          <div className="hidden h-full md:flex md:w-64 md:flex-col md:fixed md:inset-y-0 z-[80]">
+            <ManagerSidebar showSideBar={showSideBar} setShowSideBar={setShowSideBar} />
+          </div>
 
-      {/* Contenu principal */}
-      <div className="md:pl-64 flex flex-col min-h-screen">
-        <ManagerHeader 
-          title="Tableau de bord Manager" 
-          showSideBar={showSideBar} 
-          setShowSideBar={setShowSideBar} 
-        />
-        
-        <main className="flex-1 p-6 bg-gradient-to-br from-orange-50 to-orange-100 dark:from-gray-900 dark:to-gray-800">
-          {children}
-        </main>
-      </div>
+          {/* Contenu principal */}
+          <div className="md:pl-64 flex flex-col min-h-screen">
+            <ManagerHeader 
+              title="Tableau de bord Manager" 
+              showSideBar={showSideBar} 
+              setShowSideBar={setShowSideBar} 
+            />
+            
+            <main className="flex-1 p-6 bg-gradient-to-br from-orange-50 to-orange-100 dark:from-gray-900 dark:to-gray-800">
+              {children}
+            </main>
+          </div>
 
-      {/* Sidebar mobile avec overlay */}
-      <div 
-        className="md:hidden fixed inset-0 z-[90] bg-black bg-opacity-50 transition-opacity duration-300 ease-in-out" 
-        style={{ opacity: showSideBar ? 1 : 0, pointerEvents: showSideBar ? 'auto' : 'none' }}
-        onClick={() => setShowSideBar(false)}
-      >
-        <div className="absolute inset-y-0 left-0" onClick={e => e.stopPropagation()}>
-          <ManagerSidebar showSideBar={showSideBar} setShowSideBar={setShowSideBar} />
+          {/* Sidebar mobile avec overlay */}
+          <div 
+            className="md:hidden fixed inset-0 z-[90] bg-black bg-opacity-50 transition-opacity duration-300 ease-in-out" 
+            style={{ opacity: showSideBar ? 1 : 0, pointerEvents: showSideBar ? 'auto' : 'none' }}
+            onClick={() => setShowSideBar(false)}
+          >
+            <div className="absolute inset-y-0 left-0" onClick={e => e.stopPropagation()}>
+              <ManagerSidebar showSideBar={showSideBar} setShowSideBar={setShowSideBar} />
+            </div>
+          </div>
+
+          {/* Notifications toast */}
+          <Toaster 
+            position="top-right"
+            toastOptions={{
+              duration: 3000,
+              style: {
+                background: '#333',
+                color: '#fff',
+              },
+              success: {
+                style: {
+                  background: 'green',
+                },
+              },
+              error: {
+                style: {
+                  background: 'red',
+                },
+              },
+            }}
+          />
         </div>
-      </div>
-
-      {/* Notifications toast */}
-      <Toaster 
-        position="top-right"
-        toastOptions={{
-          duration: 3000,
-          style: {
-            background: '#333',
-            color: '#fff',
-          },
-          success: {
-            style: {
-              background: 'green',
-            },
-          },
-          error: {
-            style: {
-              background: 'red',
-            },
-          },
-        }}
-      />
-    </div>
+    </LanguageProvider>
   );
 } 

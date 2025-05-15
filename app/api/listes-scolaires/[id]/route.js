@@ -4,7 +4,8 @@ import { serializeBigInt } from "@/lib/utils/serialize";
 
 export async function GET(request, { params }) {
   try {
-    const { id } = params;
+    // S'assurer que params est bien attendu avant d'accéder à ses propriétés
+    const { id } = await params;
     
     if (!id) {
       return NextResponse.json(

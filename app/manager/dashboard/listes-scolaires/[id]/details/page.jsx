@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { ArrowLeft, Pencil, Trash2, Package, Calendar, User, AlertCircle, BookOpen, Eye, CheckCircle2 } from "lucide-react";
 import { toast } from "react-hot-toast";
+import { useConfirmation } from "@/hooks/use-confirmation";
 
 export default function ListeScolaireDetailsPage({ params }) {
   const router = useRouter();
@@ -15,6 +16,7 @@ export default function ListeScolaireDetailsPage({ params }) {
   const [liste, setListe] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isDeleting, setIsDeleting] = useState(false);
+  const { openConfirmation, ConfirmationDialog } = useConfirmation();
 
   useEffect(() => {
     const fetchListe = async () => {
@@ -37,73 +39,96 @@ export default function ListeScolaireDetailsPage({ params }) {
     fetchListe();
   }, [id, router]);
 
-  const handleDelete = async () => {
-    if (!confirm("Êtes-vous sûr de vouloir supprimer cette liste?")) {
-      return;
-    }
-    
-    setIsDeleting(true);
-    
-    try {
-      const res = await fetch(`/api/manager/listes-scolaires/${id}`, {
-        method: "DELETE",
-      });
+  const handleDelete = () => {
+    openConfirmation({
+      title: "Supprimer la liste scolaire",
+      message: "Êtes-vous sûr de vouloir supprimer cette liste scolaire ? Cette action est irréversible.",
+      confirmText: "Supprimer",
+      cancelText: "Annuler",
+      type: "danger",
+      onConfirm: async () => {
+        setIsDeleting(true);
+        
+        try {
+          const res = await fetch(`/api/manager/listes-scolaires/${id}`, {
+            method: "DELETE",
+          });
 
-      if (!res.ok) {
-        throw new Error("Erreur lors de la suppression");
+          if (!res.ok) {
+            throw new Error("Erreur lors de la suppression");
+          }
+
+          toast.success("Liste scolaire supprimée avec succès");
+          router.push("/manager/dashboard/listes-scolaires");
+        } catch (error) {
+          console.error("Erreur:", error);
+          toast.error("Impossible de supprimer la liste scolaire");
+          setIsDeleting(false);
+        }
       }
-
-      toast.success("Liste scolaire supprimée avec succès");
-      router.push("/manager/dashboard/listes-scolaires");
-    } catch (error) {
-      console.error("Erreur:", error);
-      toast.error("Impossible de supprimer la liste scolaire");
-      setIsDeleting(false);
-    }
+    });
   };
 
-  const handlePublish = async () => {
-    try {
-      const res = await fetch(`/api/manager/listes-scolaires/${id}/publish`, {
-        method: "PATCH",
-      });
+  const handlePublish = () => {
+    openConfirmation({
+      title: "Publier la liste scolaire",
+      message: "Cette liste scolaire sera visible par tous les utilisateurs. Voulez-vous continuer ?",
+      confirmText: "Publier",
+      cancelText: "Annuler",
+      type: "info",
+      onConfirm: async () => {
+        try {
+          const res = await fetch(`/api/manager/listes-scolaires/${id}/publish`, {
+            method: "PATCH",
+          });
 
-      if (!res.ok) {
-        throw new Error("Erreur lors de la publication");
+          if (!res.ok) {
+            throw new Error("Erreur lors de la publication");
+          }
+
+          toast.success("Liste scolaire publiée avec succès");
+          // Mettre à jour l'état local
+          setListe(prev => ({
+            ...prev,
+            statut: "PUBLIEE"
+          }));
+        } catch (error) {
+          console.error("Erreur:", error);
+          toast.error("Impossible de publier la liste scolaire");
+        }
       }
-
-      toast.success("Liste scolaire publiée avec succès");
-      // Mettre à jour l'état local
-      setListe(prev => ({
-        ...prev,
-        statut: "PUBLIEE"
-      }));
-    } catch (error) {
-      console.error("Erreur:", error);
-      toast.error("Impossible de publier la liste scolaire");
-    }
+    });
   };
 
-  const handleArchive = async () => {
-    try {
-      const res = await fetch(`/api/manager/listes-scolaires/${id}/archive`, {
-        method: "PATCH",
-      });
+  const handleArchive = () => {
+    openConfirmation({
+      title: "Archiver la liste scolaire",
+      message: "Cette liste scolaire sera archivée et ne sera plus visible par les utilisateurs. Voulez-vous continuer ?",
+      confirmText: "Archiver",
+      cancelText: "Annuler",
+      type: "warning",
+      onConfirm: async () => {
+        try {
+          const res = await fetch(`/api/manager/listes-scolaires/${id}/archive`, {
+            method: "PATCH",
+          });
 
-      if (!res.ok) {
-        throw new Error("Erreur lors de l'archivage");
+          if (!res.ok) {
+            throw new Error("Erreur lors de l'archivage");
+          }
+
+          toast.success("Liste scolaire archivée avec succès");
+          // Mettre à jour l'état local
+          setListe(prev => ({
+            ...prev,
+            statut: "ARCHIVEE"
+          }));
+        } catch (error) {
+          console.error("Erreur:", error);
+          toast.error("Impossible d'archiver la liste scolaire");
+        }
       }
-
-      toast.success("Liste scolaire archivée avec succès");
-      // Mettre à jour l'état local
-      setListe(prev => ({
-        ...prev,
-        statut: "ARCHIVEE"
-      }));
-    } catch (error) {
-      console.error("Erreur:", error);
-      toast.error("Impossible d'archiver la liste scolaire");
-    }
+    });
   };
 
   // Obtenir le statut avec la couleur correspondante
@@ -310,6 +335,7 @@ export default function ListeScolaireDetailsPage({ params }) {
           </div>
         </CardContent>
       </Card>
+      <ConfirmationDialog />
     </div>
   );
 }

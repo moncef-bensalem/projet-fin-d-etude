@@ -132,7 +132,7 @@ export default function BecomeSellerPage() {
               {t('becomeSellerDescription')}
             </p>
             <Link 
-              href="/seller/register" 
+              href="register/seller" 
               className="bg-white text-orange-600 px-6 py-3 rounded-lg font-bold inline-flex items-center hover:bg-gray-100 transition-colors"
             >
               {t('becomeSellerButton')}

@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { ShoppingCart, X, ChevronLeft, ChevronRight, Trash2, ShoppingBag, AlertCircle } from 'lucide-react';
 import ProductCard from '../components/ProductCard';
+import { useConfirmation } from '@/hooks/use-confirmation';
 
 export default function CartPage() {
   const router = useRouter();
@@ -15,6 +16,7 @@ export default function CartPage() {
   const [couponApplied, setCouponApplied] = useState(false);
   const [couponDiscount, setCouponDiscount] = useState(0);
   const [promoStoreId, setPromoStoreId] = useState(null);
+  const { openConfirmation, ConfirmationDialog } = useConfirmation();
   
   // Récupérer les éléments du panier depuis le localStorage
   useEffect(() => {
@@ -53,6 +55,20 @@ export default function CartPage() {
   const updateQuantity = (productId, newQuantity) => {
     if (newQuantity < 1) return;
     
+    // Trouver le produit dans le panier
+    const product = cartItems.find(item => item.id === productId);
+    
+    // Vérifier si le produit a une propriété stock et si la nouvelle quantité dépasse le stock disponible
+    if (product && product.stock !== undefined && newQuantity > product.stock) {
+      openConfirmation({
+        title: "Stock insuffisant",
+        message: `Désolé, il n'y a que ${product.stock} exemplaire${product.stock > 1 ? 's' : ''} disponible${product.stock > 1 ? 's' : ''} en stock pour ${product.name}.`,
+        confirmText: "OK",
+        type: "danger"
+      });
+      return;
+    }
+    
     setCartItems(prevItems => 
       prevItems.map(item => 
         item.id === productId 
@@ -69,9 +85,16 @@ export default function CartPage() {
   
   // Fonction pour vider le panier
   const clearCart = () => {
-    if (window.confirm('Êtes-vous sûr de vouloir vider votre panier ?')) {
-      setCartItems([]);
-    }
+    openConfirmation({
+      title: "Vider le panier",
+      message: "Êtes-vous sûr de vouloir vider votre panier ? Tous les articles seront supprimés.",
+      confirmText: "Vider le panier",
+      cancelText: "Annuler",
+      type: "danger",
+      onConfirm: () => {
+        setCartItems([]);
+      }
+    });
   };
   
   // Fonction pour appliquer un code promo
@@ -209,7 +232,12 @@ export default function CartPage() {
   // Fonction pour passer à la page de paiement
   const proceedToCheckout = () => {
     if (cartItems.length === 0) {
-      alert('Votre panier est vide.');
+      openConfirmation({
+        title: "Panier vide",
+        message: "Votre panier est vide.",
+        confirmText: "OK",
+        type: "info"
+      });
       return;
     }
     
@@ -235,11 +263,44 @@ export default function CartPage() {
   
   // Fonction pour ajouter un produit au panier
   const handleAddToCart = (product) => {
-    const existingItem = cartItems.find(item => item.id === product.id);
-    if (existingItem) {
-      updateQuantity(product.id, existingItem.quantity + 1);
+    // Vérifier si le produit est déjà dans le panier
+    const existingProduct = cartItems.find(item => item.id === product.id);
+    
+    // Vérifier si le produit a une propriété stock
+    if (product.stock !== undefined) {
+      // Si le produit existe déjà, vérifier que la nouvelle quantité ne dépasse pas le stock
+      if (existingProduct) {
+        const newQuantity = existingProduct.quantity + 1;
+        if (newQuantity > product.stock) {
+          openConfirmation({
+            title: "Stock insuffisant",
+            message: `Désolé, il n'y a que ${product.stock} exemplaire${product.stock > 1 ? 's' : ''} disponible${product.stock > 1 ? 's' : ''} en stock pour ${product.name}.`,
+            confirmText: "OK",
+            type: "danger"
+          });
+          return;
+        }
+        updateQuantity(product.id, newQuantity);
+      } else {
+        // Si le produit n'est pas dans le panier, vérifier que le stock est suffisant
+        if (product.stock < 1) {
+          openConfirmation({
+            title: "Produit indisponible",
+            message: `Désolé, ${product.name} n'est plus disponible en stock.`,
+            confirmText: "OK",
+            type: "danger"
+          });
+          return;
+        }
+        setCartItems([...cartItems, { ...product, quantity: 1 }]);
+      }
     } else {
-      setCartItems([...cartItems, { ...product, quantity: 1 }]);
+      // Comportement par défaut si le stock n'est pas défini
+      if (existingProduct) {
+        updateQuantity(product.id, existingProduct.quantity + 1);
+      } else {
+        setCartItems([...cartItems, { ...product, quantity: 1 }]);
+      }
     }
   };
   
@@ -557,6 +618,7 @@ export default function CartPage() {
           </div>
         </div>
       </div>
+      <ConfirmationDialog />
     </div>
   );
 }

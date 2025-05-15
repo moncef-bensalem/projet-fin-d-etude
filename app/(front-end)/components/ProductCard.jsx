@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Star, Heart, ShoppingCart } from 'lucide-react';
@@ -14,12 +14,56 @@ export default function ProductCard({ product, onAddToCart }) {
     return null; // Ne pas rendre quoi que ce soit si le produit n'est pas valide
   }
   
+  // Vérifier si le produit est déjà dans les favoris au chargement du composant
+  useEffect(() => {
+    try {
+      const wishlist = JSON.parse(localStorage.getItem('wishlist') || '[]');
+      const isProductInWishlist = wishlist.some(item => item.id === product.id);
+      setIsFavorite(isProductInWishlist);
+    } catch (error) {
+      console.error('Erreur lors de la vérification des favoris:', error);
+    }
+  }, [product.id]);
+
   // Fonction pour gérer l'ajout aux favoris
   const handleToggleFavorite = (e) => {
     e.preventDefault();
     e.stopPropagation();
-    setIsFavorite(!isFavorite);
-    // Ici, vous pourriez implémenter la logique pour sauvegarder les favoris
+    
+    try {
+      // Récupérer la liste actuelle des favoris
+      const wishlist = JSON.parse(localStorage.getItem('wishlist') || '[]');
+      
+      // Vérifier si le produit est déjà dans les favoris
+      const existingIndex = wishlist.findIndex(item => item.id === product.id);
+      
+      if (existingIndex >= 0) {
+        // Si le produit est déjà dans les favoris, le supprimer
+        wishlist.splice(existingIndex, 1);
+        setIsFavorite(false);
+      } else {
+        // Sinon, ajouter le produit aux favoris
+        wishlist.push({
+          id: product.id,
+          name: product.name,
+          price: product.price,
+          salePrice: product.discount ? product.price * (1 - product.discount / 100) : null,
+          image: Array.isArray(product.images) && product.images.length > 0 ? product.images[0] : null,
+          slug: product.slug || product.id,
+          brand: product.brand || '',
+          inStock: product.stock > 0
+        });
+        setIsFavorite(true);
+      }
+      
+      // Sauvegarder la liste mise à jour dans le localStorage
+      localStorage.setItem('wishlist', JSON.stringify(wishlist));
+      
+      // Déclencher un événement de stockage pour mettre à jour d'autres onglets
+      window.dispatchEvent(new Event('storage'));
+    } catch (error) {
+      console.error('Erreur lors de la mise à jour des favoris:', error);
+    }
   };
   
   // Fonction pour gérer l'ajout au panier

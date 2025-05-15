@@ -5,6 +5,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import { Star, Truck, ShieldCheck, ArrowLeft, ShoppingCart, Heart, Share2, ChevronRight } from 'lucide-react';
+import { useConfirmation } from '@/hooks/use-confirmation';
 
 export default function ProductDetailPage() {
   const params = useParams();
@@ -18,6 +19,7 @@ export default function ProductDetailPage() {
   const [isFavorite, setIsFavorite] = useState(false);
   const [relatedProducts, setRelatedProducts] = useState([]);
   const [error, setError] = useState(null);
+  const { openConfirmation, ConfirmationDialog } = useConfirmation();
   
   // Fonction pour générer une clé sécurisée
   const safeKey = (prefix, value) => {
@@ -179,38 +181,73 @@ export default function ProductDetailPage() {
   const handleAddToCart = () => {
     if (!product) return;
     
-    // Extraire uniquement les propriétés nécessaires pour le panier
-    const cartProduct = {
-      id: product.id,
-      name: product.name,
-      price: product.price,
-      discount: product.discount,
-      image: product.images && product.images.length > 0 ? product.images[0] : null,
-      quantity: quantity
-    };
-    
-    // Récupérer le panier actuel du localStorage
-    const currentCart = JSON.parse(localStorage.getItem('cart') || '[]');
-    
-    // Vérifier si le produit est déjà dans le panier
-    const existingProductIndex = currentCart.findIndex(item => item.id === product.id);
-    
-    if (existingProductIndex >= 0) {
-      // Si le produit existe déjà, augmenter la quantité
-      currentCart[existingProductIndex].quantity += quantity;
-    } else {
-      // Sinon, ajouter le produit
-      currentCart.push(cartProduct);
+    // Vérifier si la quantité demandée est disponible en stock
+    if (quantity > product.stock) {
+      openConfirmation({
+        title: "Stock insuffisant",
+        message: `Désolé, il n'y a que ${product.stock} exemplaire${product.stock > 1 ? 's' : ''} disponible${product.stock > 1 ? 's' : ''} en stock.`,
+        confirmText: "OK",
+        type: "danger"
+      });
+      return;
     }
     
-    // Sauvegarder le panier mis à jour
-    localStorage.setItem('cart', JSON.stringify(currentCart));
-    
-    // Déclencher un événement pour mettre à jour le compteur du panier
-    window.dispatchEvent(new Event('storage'));
-    
-    // Afficher une notification
-    alert(`${product.name} ajouté au panier (${quantity} exemplaire${quantity > 1 ? 's' : ''})`);
+    openConfirmation({
+      title: "Ajouter au panier",
+      message: `Voulez-vous ajouter ${product.name} au panier (${quantity} exemplaire${quantity > 1 ? 's' : ''}) ?`,
+      confirmText: "Ajouter au panier",
+      cancelText: "Annuler",
+      type: "info",
+      onConfirm: () => {
+        // Extraire uniquement les propriétés nécessaires pour le panier
+        const cartProduct = {
+          id: product.id,
+          name: product.name,
+          price: product.price,
+          discount: product.discount,
+          image: product.images && product.images.length > 0 ? product.images[0] : null,
+          quantity: quantity,
+          stock: product.stock, // Ajouter le stock pour les vérifications futures
+          store: product.store ? {
+            id: product.store.id,
+            name: product.store.name
+          } : null
+        };
+        
+        // Récupérer le panier actuel du localStorage
+        const currentCart = JSON.parse(localStorage.getItem('cart') || '[]');
+        
+        // Vérifier si le produit est déjà dans le panier
+        const existingProductIndex = currentCart.findIndex(item => item.id === product.id);
+        
+        if (existingProductIndex >= 0) {
+          // Vérifier que la nouvelle quantité totale ne dépasse pas le stock disponible
+          const newQuantity = currentCart[existingProductIndex].quantity + quantity;
+          
+          if (newQuantity > product.stock) {
+            openConfirmation({
+              title: "Stock insuffisant",
+              message: `Désolé, vous avez déjà ${currentCart[existingProductIndex].quantity} exemplaire${currentCart[existingProductIndex].quantity > 1 ? 's' : ''} dans votre panier et il n'y a que ${product.stock} exemplaire${product.stock > 1 ? 's' : ''} disponible${product.stock > 1 ? 's' : ''} en stock.`,
+              confirmText: "OK",
+              type: "danger"
+            });
+            return;
+          }
+          
+          // Si le produit existe déjà et qu'il y a assez de stock, augmenter la quantité
+          currentCart[existingProductIndex].quantity = newQuantity;
+        } else {
+          // Sinon, ajouter le produit
+          currentCart.push(cartProduct);
+        }
+        
+        // Sauvegarder le panier mis à jour
+        localStorage.setItem('cart', JSON.stringify(currentCart));
+        
+        // Déclencher un événement pour mettre à jour le compteur du panier
+        window.dispatchEvent(new Event('storage'));
+      }
+    });
   };
   
   // Fonction pour gérer l'ajout aux favoris
@@ -225,7 +262,12 @@ export default function ProductDetailPage() {
       // Vérifier que l'ID est une chaîne valide
       if (!relatedProductId || typeof relatedProductId !== 'string') {
         console.error('ID de produit invalide:', relatedProductId);
-        alert('Erreur: ID de produit invalide');
+        openConfirmation({
+          title: "Erreur",
+          message: "ID de produit invalide",
+          confirmText: "OK",
+          type: "danger"
+        });
         return;
       }
       
@@ -241,6 +283,18 @@ export default function ProductDetailPage() {
         throw new Error('Données de produit invalides');
       }
       
+      // Vérifier si le produit est en stock
+      const stock = safeNumber(productData.stock, 0);
+      if (stock <= 0) {
+        openConfirmation({
+          title: "Produit indisponible",
+          message: "Désolé, ce produit n'est plus disponible en stock.",
+          confirmText: "OK",
+          type: "danger"
+        });
+        return;
+      }
+      
       // Créer un objet simple pour le panier
       const cartProduct = {
         id: safeString(productData.id),
@@ -249,34 +303,63 @@ export default function ProductDetailPage() {
         discount: safeNumber(productData.discount),
         image: Array.isArray(productData.images) && productData.images.length > 0 ? 
           productData.images[0] : null,
-        quantity: 1
+        quantity: 1,
+        stock: stock, // Ajouter le stock pour les vérifications futures
+        store: productData.store ? {
+          id: safeString(productData.store.id),
+          name: safeString(productData.store.name)
+        } : null
       };
       
-      // Récupérer le panier actuel
+      // Récupérer le panier actuel pour vérifier la quantité existante
       const currentCart = JSON.parse(localStorage.getItem('cart') || '[]');
-      
-      // Vérifier si le produit est déjà dans le panier
       const existingProductIndex = currentCart.findIndex(item => item.id === cartProduct.id);
       
+      // Vérifier si l'ajout dépasserait le stock disponible
       if (existingProductIndex >= 0) {
-        // Si le produit existe déjà, augmenter la quantité de 1
-        currentCart[existingProductIndex].quantity += 1;
-      } else {
-        // Sinon, ajouter le produit
-        currentCart.push(cartProduct);
+        const currentQuantity = currentCart[existingProductIndex].quantity;
+        if (currentQuantity >= stock) {
+          openConfirmation({
+            title: "Stock insuffisant",
+            message: `Désolé, vous avez déjà ${currentQuantity} exemplaire${currentQuantity > 1 ? 's' : ''} dans votre panier et il n'y a que ${stock} exemplaire${stock > 1 ? 's' : ''} disponible${stock > 1 ? 's' : ''} en stock.`,
+            confirmText: "OK",
+            type: "danger"
+          });
+          return;
+        }
       }
       
-      // Sauvegarder le panier mis à jour
-      localStorage.setItem('cart', JSON.stringify(currentCart));
-      
-      // Déclencher un événement pour mettre à jour le compteur du panier
-      window.dispatchEvent(new Event('storage'));
-      
-      // Afficher une notification
-      alert(`${cartProduct.name} ajouté au panier`);
+      openConfirmation({
+        title: "Ajouter au panier",
+        message: `Voulez-vous ajouter ${cartProduct.name} au panier ?`,
+        confirmText: "Ajouter au panier",
+        cancelText: "Annuler",
+        type: "info",
+        onConfirm: () => {
+          // Vérifier si le produit est déjà dans le panier
+          if (existingProductIndex >= 0) {
+            // Si le produit existe déjà, augmenter la quantité de 1
+            currentCart[existingProductIndex].quantity += 1;
+          } else {
+            // Sinon, ajouter le produit
+            currentCart.push(cartProduct);
+          }
+          
+          // Sauvegarder le panier mis à jour
+          localStorage.setItem('cart', JSON.stringify(currentCart));
+          
+          // Déclencher un événement pour mettre à jour le compteur du panier
+          window.dispatchEvent(new Event('storage'));
+        }
+      });
     } catch (error) {
       console.error('Erreur lors de l\'ajout au panier:', error);
-      alert('Erreur lors de l\'ajout au panier. Veuillez réessayer.');
+      openConfirmation({
+        title: "Erreur",
+        message: "Erreur lors de l'ajout au panier. Veuillez réessayer.",
+        confirmText: "OK",
+        type: "danger"
+      });
     }
   };
   
@@ -362,6 +445,7 @@ export default function ProductDetailPage() {
             </div>
           </div>
         </div>
+        <ConfirmationDialog />
       </div>
     );
   }
