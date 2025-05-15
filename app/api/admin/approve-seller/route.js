@@ -72,7 +72,7 @@ export async function POST(request) {
       });
     }
     
-    // Créer un abonnement de test (gratuit pour 30 jours)
+    // Créer un abonnement de test (gratuit pour 3 jours)
     const hasSubscription = await prisma.subscription.findFirst({
       where: { userId: user.id, status: "ACTIVE" }
     });

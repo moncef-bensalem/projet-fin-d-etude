@@ -1,7 +1,7 @@
 {
-  "/(front-end)/listes-scolaires/[id]/page": "app/(front-end)/listes-scolaires/[id]/page.js",
+  "/login/page": "app/login/page.js",
   "/(front-end)/page": "app/(front-end)/page.js",
-  "/seller/listes-scolaires/page": "app/seller/listes-scolaires/page.js",
-  "/seller/dashboard/page": "app/seller/dashboard/page.js",
-  "/(front-end)/cart/page": "app/(front-end)/cart/page.js"
+  "/(front-end)/faq/page": "app/(front-end)/faq/page.js",
+  "/(front-end)/listes-scolaires/page": "app/(front-end)/listes-scolaires/page.js",
+  "/dashboard/page": "app/dashboard/page.js"
 }

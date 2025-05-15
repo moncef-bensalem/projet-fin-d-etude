@@ -6,41 +6,6 @@
       "static/css/app/layout.css",
       "static/chunks/app/layout.js"
     ],
-    "/dashboard/layout": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/dashboard/layout.js"
-    ],
-    "/api/auth/[...nextauth]/route": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/api/auth/[...nextauth]/route.js"
-    ],
-    "/dashboard/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/dashboard/page.js"
-    ],
-    "/api/admin/dashboard/route": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/api/admin/dashboard/route.js"
-    ],
-    "/api/admin/categories/route": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/api/admin/categories/route.js"
-    ],
-    "/api/admin/dashboard/recent-orders/route": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/api/admin/dashboard/recent-orders/route.js"
-    ],
-    "/api/admin/dashboard/categories-summary/route": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/api/admin/dashboard/categories-summary/route.js"
-    ],
     "/(front-end)/layout": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
@@ -51,20 +16,40 @@
       "static/chunks/main-app.js",
       "static/chunks/app/(front-end)/page.js"
     ],
+    "/(front-end)/products/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/(front-end)/products/page.js"
+    ],
+    "/api/products/route": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/api/products/route.js"
+    ],
+    "/api/categories/route": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/api/categories/route.js"
+    ],
     "/api/stores/route": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
       "static/chunks/app/api/stores/route.js"
+    ],
+    "/api/auth/[...nextauth]/route": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/api/auth/[...nextauth]/route.js"
     ],
     "/api/all-products-admin/route": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
       "static/chunks/app/api/all-products-admin/route.js"
     ],
-    "/api/categories/route": [
+    "/(front-end)/become-seller/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/api/categories/route.js"
+      "static/chunks/app/(front-end)/become-seller/page.js"
     ],
     "/(front-end)/listes-scolaires/page": [
       "static/chunks/webpack.js",
@@ -76,150 +61,55 @@
       "static/chunks/main-app.js",
       "static/chunks/app/api/listes-scolaires/published/route.js"
     ],
-    "/(front-end)/listes-scolaires/[id]/page": [
+    "/(front-end)/faq/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/(front-end)/listes-scolaires/[id]/page.js"
-    ],
-    "/api/listes-scolaires/[id]/route": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/api/listes-scolaires/[id]/route.js"
-    ],
-    "/api/listes-scolaires/[id]/besoins/route": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/api/listes-scolaires/[id]/besoins/route.js"
-    ],
-    "/(front-end)/help/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/(front-end)/help/page.js"
+      "static/chunks/app/(front-end)/faq/page.js"
     ],
     "/login/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
       "static/chunks/app/login/page.js"
     ],
+    "/auth/error/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/auth/error/page.js"
+    ],
     "/api/auth/redirect-by-role/route": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
       "static/chunks/app/api/auth/redirect-by-role/route.js"
     ],
-    "/manager/dashboard/layout": [
+    "/dashboard/layout": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/manager/dashboard/layout.js"
+      "static/chunks/app/dashboard/layout.js"
     ],
-    "/manager/dashboard/page": [
+    "/dashboard/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/manager/dashboard/page.js"
+      "static/chunks/app/dashboard/page.js"
     ],
-    "/api/manager/dashboard/stats/route": [
+    "/api/admin/dashboard/route": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/api/manager/dashboard/stats/route.js"
+      "static/chunks/app/api/admin/dashboard/route.js"
     ],
-    "/manager/dashboard/listes-scolaires/page": [
+    "/api/admin/dashboard/recent-orders/route": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/manager/dashboard/listes-scolaires/page.js"
+      "static/chunks/app/api/admin/dashboard/recent-orders/route.js"
     ],
-    "/api/manager/listes-scolaires/route": [
+    "/api/admin/categories/route": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/api/manager/listes-scolaires/route.js"
+      "static/chunks/app/api/admin/categories/route.js"
     ],
-    "/manager/dashboard/listes-scolaires/[id]/details/page": [
+    "/api/admin/dashboard/categories-summary/route": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/manager/dashboard/listes-scolaires/[id]/details/page.js"
-    ],
-    "/api/manager/listes-scolaires/[id]/route": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/api/manager/listes-scolaires/[id]/route.js"
-    ],
-    "/manager/dashboard/listes-scolaires/[id]/edit/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/manager/dashboard/listes-scolaires/[id]/edit/page.js"
-    ],
-    "/api/manager/listes-scolaires/[id]/archive/route": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/api/manager/listes-scolaires/[id]/archive/route.js"
-    ],
-    "/api/manager/listes-scolaires/[id]/publish/route": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/api/manager/listes-scolaires/[id]/publish/route.js"
-    ],
-    "/seller/dashboard/layout": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/seller/dashboard/layout.js"
-    ],
-    "/seller/dashboard/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/seller/dashboard/page.js"
-    ],
-    "/api/seller/access/route": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/api/seller/access/route.js"
-    ],
-    "/api/seller/earnings/route": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/api/seller/earnings/route.js"
-    ],
-    "/seller/listes-scolaires/layout": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/seller/listes-scolaires/layout.js"
-    ],
-    "/seller/listes-scolaires/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/seller/listes-scolaires/page.js"
-    ],
-    "/api/seller/listes-scolaires/route": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/api/seller/listes-scolaires/route.js"
-    ],
-    "/seller/listes-scolaires/[id]/layout": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/seller/listes-scolaires/[id]/layout.js"
-    ],
-    "/seller/listes-scolaires/[id]/associer/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/seller/listes-scolaires/[id]/associer/page.js"
-    ],
-    "/api/seller/listes-scolaires/[id]/route": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/api/seller/listes-scolaires/[id]/route.js"
-    ],
-    "/api/seller/products/route": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/api/seller/products/route.js"
-    ],
-    "/api/seller/listes-scolaires/[id]/associations/route": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/api/seller/listes-scolaires/[id]/associations/route.js"
-    ],
-    "/(front-end)/cart/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/(front-end)/cart/page.js"
+      "static/chunks/app/api/admin/dashboard/categories-summary/route.js"
     ]
   }
 }
