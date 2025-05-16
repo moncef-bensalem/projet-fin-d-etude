@@ -121,3 +121,18 @@ export const logConfig = config;
 
 // Exporter les niveaux de log
 export const logLevels = LOG_LEVELS;
+
+// Exporter un objet logger par défaut pour compatibilité
+const logger = {
+  error,
+  warn,
+  info,
+  debug,
+  logApiRequest,
+  logApiResponse,
+  logApiError,
+  config: logConfig,
+  levels: logLevels
+};
+
+export default logger;
