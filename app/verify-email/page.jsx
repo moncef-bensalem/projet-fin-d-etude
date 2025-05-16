@@ -81,3 +81,6 @@ function VerifyEmailContent() {
     </div>
   );
 }
+
+// ✅ Exportation correcte pour une page Next.js
+export default VerifyEmailContent;
