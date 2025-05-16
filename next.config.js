@@ -41,9 +41,7 @@ const nextConfig = {
     return config;
   },
   // Augmenter le timeout pour les builds longs
-  experimental: {
-    serverComponentsExternalPackages: ['@prisma/client']
-  },
+  serverExternalPackages: ['@prisma/client'],
   // Ignorer les erreurs de type ESLint pendant le build
   eslint: {
     ignoreDuringBuilds: true,

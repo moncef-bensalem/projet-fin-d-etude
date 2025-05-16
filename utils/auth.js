@@ -1,5 +1,8 @@
 import { getServerSession } from "next-auth/next";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+
+// Importer et réexporter authOptions depuis le fichier NextAuth
+import { authOptions as nextAuthOptions } from "@/app/api/auth/[...nextauth]/route";
+export const authOptions = nextAuthOptions;
 
 // Fonction pour obtenir la session utilisateur côté serveur
 export async function getSession() {

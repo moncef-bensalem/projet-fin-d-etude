@@ -4,11 +4,11 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '@/context/auth-context';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Alert, AlertCircle, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from '@/components/ui/accordion';
-import { Loader2, RefreshCw, CheckCircle } from 'lucide-react';
+import { Loader2, RefreshCw, CheckCircle, AlertCircle } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 
 export default function PromotionsTestPage() {
