@@ -104,16 +104,16 @@ export function logApiResponse(req, res, responseTime, extra = {}) {
 }
 
 // Fonction pour logger les erreurs API
-export function logApiError(req, error, extra = {}) {
+export function logApiError(req, err, extra = {}) {
   const meta = {
     method: req.method,
     url: req.url,
-    error: error.message,
-    stack: process.env.NODE_ENV !== 'production' ? error.stack : undefined,
+    error: err.message,
+    stack: process.env.NODE_ENV !== 'production' ? err.stack : undefined,
     ...extra
   };
   
-  this.error(`API Error`, meta);
+  error(`API Error`, meta);
 }
 
 // Exporter la configuration pour permettre sa modification
