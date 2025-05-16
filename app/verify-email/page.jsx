@@ -1,6 +1,7 @@
 "use client";
+export const dynamic = "force-dynamic";
 
-import { useEffect, useState, Suspense } from "react";
+import { useEffect, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import { Logo } from "@/components/ui/logo";
