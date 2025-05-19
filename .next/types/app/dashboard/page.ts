@@ -1,4 +1,4 @@
-// File: C:\Users\Stoufa\Desktop\PFE_github\app\dashboard\page.jsx
+// File: C:\Users\Stoufa\Desktop\pfe\Pfe\app\dashboard\page.jsx
 import * as entry from '../../../../app/dashboard/page.js'
 import type { ResolvingMetadata, ResolvingViewport } from 'next/dist/lib/metadata/types/metadata-interface.js'
 

@@ -2,16 +2,16 @@ import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/utils/auth';
 import { prisma } from '@/utils/db';
-import { error, info, warn } from '@/utils/logger';
+import { logger } from '@/utils/logger';
 
 export async function GET() {
   try {
-    info('[API] Fetching admin dashboard statistics');
+    logger.info('[API] Fetching admin dashboard statistics');
     
     // Check authentication
     const session = await getServerSession(authOptions);
     if (!session || !session.user) {
-      warn('[API] Unauthorized access attempt to dashboard stats');
+      logger.warn('[API] Unauthorized access attempt to dashboard stats');
       return NextResponse.json({ error: 'Non autorisé' }, { status: 401 });
     }
     
@@ -22,7 +22,7 @@ export async function GET() {
     });
     
     if (!user || (user.role !== 'ADMIN' && user.role !== 'MANAGER')) {
-      warn(`[API] User ${session.user.email} tried to access dashboard stats without permission`);
+      logger.warn(`[API] User ${session.user.email} tried to access dashboard stats without permission`);
       return NextResponse.json({ error: 'Accès restreint aux administrateurs et managers' }, { status: 403 });
     }
     
@@ -124,15 +124,15 @@ export async function GET() {
       }
     };
     
-    info('[API] Successfully retrieved dashboard statistics');
+    logger.info('[API] Successfully retrieved dashboard statistics');
     return NextResponse.json(stats);
     
   } catch (error) {
-    error(`[API] Error fetching dashboard stats: ${error.message}`);
+    logger.error(`[API] Error fetching dashboard stats: ${error.message}`);
     
     // In development, return demo data if DB error occurs
     if (process.env.NODE_ENV === 'development') {
-      info('[API] Returning demo dashboard stats');
+      logger.info('[API] Returning demo dashboard stats');
       return NextResponse.json(generateDemoStats());
     }
     

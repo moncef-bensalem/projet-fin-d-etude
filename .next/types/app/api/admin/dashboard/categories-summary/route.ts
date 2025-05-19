@@ -1,4 +1,4 @@
-// File: C:\Users\Stoufa\Desktop\PFE_github\app\api\admin\dashboard\categories-summary\route.js
+// File: C:\Users\Stoufa\Desktop\pfe\Pfe\app\api\admin\dashboard\categories-summary\route.js
 import * as entry from '../../../../../../../app/api/admin/dashboard/categories-summary/route.js'
 import type { NextRequest } from 'next/server.js'
 

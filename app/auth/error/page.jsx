@@ -1,15 +1,14 @@
 "use client";
 
-import { useEffect, Suspense } from "react";
+import { useEffect } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 
-// Composant avec useSearchParams enveloppé dans Suspense
-function ErrorContent() {
+export default function AuthError() {
   const searchParams = useSearchParams();
   const error = searchParams.get("error");
-  
+
   const getErrorMessage = (error) => {
     switch (error) {
       case "OAuthSignin":
@@ -60,25 +59,5 @@ function ErrorContent() {
         </div>
       </div>
     </div>
-  );
-}
-
-// Composant de chargement pour Suspense
-function LoadingFallback() {
-  return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
-      <div className="max-w-md w-full space-y-8 p-8 bg-white rounded-xl shadow-lg text-center">
-        <h2 className="text-3xl font-bold text-gray-600">Chargement...</h2>
-        <p className="mt-2 text-gray-500">Veuillez patienter</p>
-      </div>
-    </div>
-  );
-}
-
-export default function AuthError() {
-  return (
-    <Suspense fallback={<LoadingFallback />}>
-      <ErrorContent />
-    </Suspense>
   );
 }

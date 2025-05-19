@@ -1,4 +1,4 @@
-// File: C:\Users\Stoufa\Desktop\PFE_github\app\login\page.jsx
+// File: C:\Users\Stoufa\Desktop\pfe\Pfe\app\login\page.jsx
 import * as entry from '../../../../app/login/page.js'
 import type { ResolvingMetadata, ResolvingViewport } from 'next/dist/lib/metadata/types/metadata-interface.js'
 

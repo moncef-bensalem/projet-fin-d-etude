@@ -1,12 +1,11 @@
 'use client';
 
-import { useState, useEffect, Suspense } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { CheckCircle, Package, Calendar, Printer, ArrowLeft, ShoppingBag } from 'lucide-react';
 
-// Component that uses useSearchParams wrapped in Suspense in the default export
-function OrderConfirmation() {
+export default function OrderConfirmationPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const orderId = searchParams.get('orderId');
@@ -271,13 +270,5 @@ function OrderConfirmation() {
         </div>
       </div>
     </div>
-  );
-}
-
-export default function OrderConfirmationPage() {
-  return (
-    <Suspense fallback={<div className="flex justify-center items-center min-h-screen">Chargement de la confirmation de commande...</div>}>
-      <OrderConfirmation />
-    </Suspense>
   );
 }

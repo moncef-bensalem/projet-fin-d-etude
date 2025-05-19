@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, Suspense } from "react";
+import { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { toast } from "react-hot-toast";
@@ -8,27 +8,7 @@ import { Logo } from "@/components/ui/logo";
 import PasswordStrengthMeter from "@/components/ui/password-strength-meter";
 import { validatePassword, validatePasswordWithDetails, logPasswordEvent } from "@/lib/password-validator";
 
-// Composant de chargement pour Suspense
-function LoadingFallback() {
-  return (
-    <div className="flex min-h-screen flex-col items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
-      <div className="w-full max-w-md space-y-8">
-        <div className="flex flex-col items-center">
-          <Logo className="h-12 w-auto" />
-          <h1 className="mt-6 text-center text-3xl font-bold tracking-tight text-gray-900">
-            Chargement...
-          </h1>
-          <p className="mt-2 text-center text-sm text-gray-600">
-            Veuillez patienter
-          </p>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// Composant principal avec useSearchParams enveloppé dans Suspense
-function ResetPasswordContent() {
+export default function ResetPasswordPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [password, setPassword] = useState("");
@@ -206,13 +186,4 @@ function ResetPasswordContent() {
       </div>
     </div>
   );
-}
-
-// Exporter le composant principal avec Suspense
-export default function ResetPasswordPage() {
-  return (
-    <Suspense fallback={<LoadingFallback />}>
-      <ResetPasswordContent />
-    </Suspense>
-  );
-}
+} 

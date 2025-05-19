@@ -1,9 +1,6 @@
 'use client';
 
-// Prevent static prerendering
-export const dynamic = 'force-dynamic';
-
-import { useState, useEffect, Suspense } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useSession } from 'next-auth/react';
 import { 
@@ -18,8 +15,8 @@ import {
   Calendar
 } from 'lucide-react';
 
-function AccountContent() {
-  const { data: session } = useSession({ required: false }) || {};
+export default function AccountPage() {
+  const { data: session } = useSession();
   const [loading, setLoading] = useState(true);
   const [orders, setOrders] = useState([]);
   

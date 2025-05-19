@@ -1,4 +1,4 @@
-// File: C:\Users\Stoufa\Desktop\PFE_github\app\api\all-products-admin\route.js
+// File: C:\Users\Stoufa\Desktop\pfe\Pfe\app\api\all-products-admin\route.js
 import * as entry from '../../../../../app/api/all-products-admin/route.js'
 import type { NextRequest } from 'next/server.js'
 
