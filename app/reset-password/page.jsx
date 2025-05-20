@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { toast } from "react-hot-toast";
@@ -8,7 +8,7 @@ import { Logo } from "@/components/ui/logo";
 import PasswordStrengthMeter from "@/components/ui/password-strength-meter";
 import { validatePassword, validatePasswordWithDetails, logPasswordEvent } from "@/lib/password-validator";
 
-export default function ResetPasswordPage() {
+function ResetPasswordContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [password, setPassword] = useState("");
@@ -185,5 +185,13 @@ export default function ResetPasswordPage() {
         </form>
       </div>
     </div>
+  );
+}
+
+export default function ResetPasswordPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Chargement...</div>}>
+      <ResetPasswordContent />
+    </Suspense>
   );
 } 
