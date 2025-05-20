@@ -28,10 +28,9 @@ const nextConfig = {
       },
     ],
   },
-  // Exclude specific pages from static generation
+  // Configuration pour exclure certaines pages de la génération statique
   experimental: {
-    // This disables static generation for specific paths
-    excludeDefaultMomentLocales: true,
+    // Options expérimentales valides
   },
   // Exclude account pages from the build
   pageExtensions: ['js', 'jsx', 'ts', 'tsx'],

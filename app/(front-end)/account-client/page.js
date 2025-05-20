@@ -1,9 +1,6 @@
-// This is a server component that doesn't use any client hooks
-import dynamic from 'next/dynamic';
+'use client';
 
-// Skip static generation for this route
-export const dynamic = 'force-dynamic';
-export const fetchCache = 'force-no-store';
+import dynamic from 'next/dynamic';
 
 // Dynamically import the client component with no SSR
 const AccountClientComponent = dynamic(() => import('./client-component'), { 
