@@ -1,11 +1,7 @@
 import { Suspense } from 'react';
-import dynamic from 'next/dynamic';
 
-// Import dynamique du composant client avec désactivation du SSR
-const StoreBannersContent = dynamic(
-  () => import('./store-banners-content'),
-  { ssr: false }
-);
+// Composant serveur simple qui importe le composant client
+import StoreBannersContent from './store-banners-content';
 
 // Composant principal qui sera rendu côté serveur
 export default function StoreBannersPage() {
