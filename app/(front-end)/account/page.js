@@ -1,10 +1,16 @@
-import { redirect } from 'next/navigation';
+// This file is a server component that doesn't use any client hooks
 
-// Skip static generation for this route
+// Disable static generation for this route
 export const dynamic = 'force-dynamic';
+export const fetchCache = 'only-no-store';
+export const revalidate = 0;
 
-// This is a server component that redirects to a client-side route
+// Simple placeholder component
 export default function AccountPage() {
-  // Redirect to a client-side route that will handle the session
-  redirect('/account-client');
+  return (
+    <div className="container mx-auto px-4 py-12 text-center">
+      <h1 className="text-2xl font-bold mb-4">Chargement de votre compte...</h1>
+      <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-orange-500 mx-auto"></div>
+    </div>
+  );
 }

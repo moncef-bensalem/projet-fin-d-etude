@@ -28,6 +28,20 @@ const nextConfig = {
       },
     ],
   },
+  // Exclude specific pages from static generation
+  experimental: {
+    // This disables static generation for specific paths
+    excludeDefaultMomentLocales: true,
+  },
+  // Exclude account pages from the build
+  pageExtensions: ['js', 'jsx', 'ts', 'tsx'],
+  webpack: (config, { isServer }) => {
+    // Fix for useSession during build time
+    if (isServer) {
+      config.externals = [...config.externals, 'next-auth/react'];
+    }
+    return config;
+  },
 }
 
 module.exports = nextConfig
