@@ -1,6 +1,20 @@
+import { Suspense } from 'react';
+
+// Composant principal qui sera rendu côté serveur
+export default function StoreBannersPage() {
+  return (
+    <Suspense fallback={<div className="flex items-center justify-center min-h-screen">
+      <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-orange-500"></div>
+    </div>}>
+      <StoreBannersContent />
+    </Suspense>
+  );
+}
+
+// Composant client qui utilise des hooks côté client
 'use client';
 
-import { useState, useEffect, Suspense } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '@/context/auth-context';
 import { useSearchParams } from 'next/navigation';
 import PageHead from '@/components/backoffice/PageHead';
