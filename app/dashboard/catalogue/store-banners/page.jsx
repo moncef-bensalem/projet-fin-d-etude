@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useAuth } from '@/context/auth-context';
 import { useSearchParams } from 'next/navigation';
 import PageHead from '@/components/backoffice/PageHead';
@@ -25,7 +25,7 @@ import { UploadButton } from '@/utils/uploadthing';
 import { toast } from 'react-hot-toast';
 import Link from 'next/link';
 
-export default function StoreBannersPage() {
+function StoreBannersContent() {
   const { user, loading: authLoading } = useAuth();
   const searchParams = useSearchParams();
   const storeIdFromUrl = searchParams.get('storeId');

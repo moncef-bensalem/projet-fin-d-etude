@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -8,7 +8,7 @@ import { Filter, X, ChevronDown, Grid3X3, List, Search } from 'lucide-react';
 import ProductCard from '../components/ProductCard';
 import { useConfirmation } from '@/hooks/use-confirmation';
 
-export default function ProductsPage() {
+function ProductsContent() {
   const searchParams = useSearchParams();
   const initialSearch = searchParams.get('search') || '';
   const initialCategory = searchParams.get('category') || '';
@@ -465,5 +465,13 @@ export default function ProductsPage() {
       </div>
       <ConfirmationDialog />
     </div>
+  );
+}
+
+export default function ProductsPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Chargement...</div>}>
+      <ProductsContent />
+    </Suspense>
   );
 }
