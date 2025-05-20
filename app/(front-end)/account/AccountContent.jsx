@@ -16,7 +16,8 @@ import {
 } from 'lucide-react';
 
 export default function AccountContent() {
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
+  const isLoading = status === 'loading';
   const [loading, setLoading] = useState(true);
   const [orders, setOrders] = useState([]);
   
@@ -51,6 +52,19 @@ export default function AccountContent() {
     fetchOrders();
     checkLocalStorageOrders();
   }, []);
+  
+  if (isLoading) {
+    return (
+      <div className="container mx-auto px-4 py-12 text-center">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-8 max-w-md mx-auto">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-orange-500 mx-auto mb-4"></div>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
+            Chargement...
+          </h1>
+        </div>
+      </div>
+    );
+  }
   
   if (!session) {
     return (
