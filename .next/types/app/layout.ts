@@ -1,4 +1,4 @@
-// File: C:\Users\Stoufa\Desktop\pfe\Pfe\app\layout.js
+// File: C:\Users\Stoufa\Desktop\PFE_github\app\layout.js
 import * as entry from '../../../app/layout.js'
 import type { ResolvingMetadata, ResolvingViewport } from 'next/dist/lib/metadata/types/metadata-interface.js'
 

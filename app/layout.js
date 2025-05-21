@@ -14,6 +14,7 @@ export default function RootLayout({ children }) {
       <head>
         <title>Penventory - Gestion de stock</title>
         <meta name="description" content="Application de gestion de stock" />
+        <link rel="icon" href="/favicon.png" />
       </head>
       <body className={inter.className}>
         <ThemeProvider

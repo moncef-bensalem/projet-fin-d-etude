@@ -1,12 +1,14 @@
 {
-  "/api/wallet/transactions/route": "app/api/wallet/transactions/route.js",
-  "/api/stores/route": "app/api/stores/route.js",
   "/api/categories/route": "app/api/categories/route.js",
-  "/api/all-products-admin/route": "app/api/all-products-admin/route.js",
-  "/dashboard/page": "app/dashboard/page.js",
-  "/dashboard/orders/page": "app/dashboard/orders/page.js",
+  "/api/stores/route": "app/api/stores/route.js",
+  "/api/products/route": "app/api/products/route.js",
+  "/api/auth/[...nextauth]/route": "app/api/auth/[...nextauth]/route.js",
+  "/api/products/counts/route": "app/api/products/counts/route.js",
+  "/login/page": "app/login/page.js",
+  "/_not-found/page": "app/_not-found/page.js",
   "/(front-end)/page": "app/(front-end)/page.js",
-  "/dashboard/catalogue/products/page": "app/dashboard/catalogue/products/page.js",
-  "/dashboard/wallet/page": "app/dashboard/wallet/page.js",
-  "/dashboard/sellers/page": "app/dashboard/sellers/page.js"
+  "/manager/dashboard/reviews/page": "app/manager/dashboard/reviews/page.js",
+  "/manager/dashboard/page": "app/manager/dashboard/page.js",
+  "/(front-end)/help/page": "app/(front-end)/help/page.js",
+  "/(front-end)/become-seller/page": "app/(front-end)/become-seller/page.js"
 }

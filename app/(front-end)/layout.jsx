@@ -92,7 +92,7 @@ function StoreLayoutContent({ children }) {
   };
 
   return (
-    <div className={`flex flex-col min-h-screen ${theme === 'dark' ? 'dark' : ''}`}>
+    <div className={`flex flex-col min-h-screen pb-16 md:pb-0 ${theme === 'dark' ? 'dark' : ''}`}>
       {/* Barre de navigation */}
       <header className={`sticky top-0 z-50 w-full transition-all duration-300 ${isScrolled ? 'bg-white dark:bg-gray-900 shadow-md' : 'bg-white/80 dark:bg-gray-900/80 backdrop-blur-md'}`}>
         <div className="container mx-auto px-4">
@@ -279,18 +279,25 @@ function StoreLayoutContent({ children }) {
 
         {/* Menu mobile */}
         {isMenuOpen && (
-          <div className="md:hidden fixed inset-0 z-40 bg-black bg-opacity-50">
-            <div className="fixed inset-y-0 right-0 max-w-xs w-full bg-white dark:bg-gray-900 shadow-xl flex flex-col">
-              <div className="p-4 border-b dark:border-gray-700 flex justify-between items-center">
+          <div className="md:hidden fixed inset-0 z-40 bg-black bg-opacity-50" onClick={() => setIsMenuOpen(false)}>
+            <div 
+              className="fixed inset-y-0 right-0 max-w-xs w-full bg-white dark:bg-gray-900 shadow-xl flex flex-col overflow-y-auto" 
+              onClick={(e) => e.stopPropagation()}
+              aria-modal="true"
+              role="dialog"
+              aria-label="Menu de navigation"
+            >
+              <div className="p-4 border-b dark:border-gray-700 flex justify-between items-center sticky top-0 bg-white dark:bg-gray-900 z-10">
                 <span className="text-lg font-bold dark:text-white">Menu</span>
                 <button
                   onClick={() => setIsMenuOpen(false)}
-                  className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
+                  className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 p-2"
+                  aria-label="Fermer le menu"
                 >
                   <X size={24} />
                 </button>
               </div>
-              <nav className="flex flex-col py-2">
+              <nav className="flex flex-col py-2 flex-1 overflow-y-auto">
                 <Link
                   href="/"
                   className={`px-4 py-2 text-sm font-medium ${pathname === '/' ? 'text-orange-600' : 'text-gray-700'}`}
@@ -465,6 +472,41 @@ function StoreLayoutContent({ children }) {
           </div>
         </div>
       </footer>
+
+      {/* Barre de navigation mobile fixe en bas */}
+      <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-800 z-40 shadow-lg">
+        <div className="flex items-center justify-around h-16">
+          <Link href="/" className="flex flex-col items-center justify-center w-full h-full text-gray-700 dark:text-gray-300 hover:text-orange-600 dark:hover:text-orange-500 transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+            </svg>
+            <span className="text-xs mt-1">{t('home')}</span>
+          </Link>
+          <Link href="/categories" className="flex flex-col items-center justify-center w-full h-full text-gray-700 dark:text-gray-300 hover:text-orange-600 dark:hover:text-orange-500 transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+            </svg>
+            <span className="text-xs mt-1">{t('categories')}</span>
+          </Link>
+          <Link href="/cart" className="flex flex-col items-center justify-center w-full h-full text-gray-700 dark:text-gray-300 hover:text-orange-600 dark:hover:text-orange-500 transition-colors relative">
+            <ShoppingCart className="h-6 w-6" />
+            {cartCount > 0 && (
+              <span className="absolute top-1 right-1/4 bg-orange-600 dark:bg-orange-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                {cartCount}
+              </span>
+            )}
+            <span className="text-xs mt-1">{t('cart')}</span>
+          </Link>
+          <button
+            onClick={() => setIsMenuOpen(!isMenuOpen)}
+            className="flex flex-col items-center justify-center w-full h-full text-gray-700 dark:text-gray-300 hover:text-orange-600 dark:hover:text-orange-500 transition-colors"
+            aria-label="Menu"
+          >
+            <Menu className="h-6 w-6" />
+            <span className="text-xs mt-1">{t('menu')}</span>
+          </button>
+        </div>
+      </div>
 
       {/* Composant de chat support client */}
       <ChatSupport />
