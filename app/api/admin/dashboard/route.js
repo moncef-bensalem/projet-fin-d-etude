@@ -3,7 +3,10 @@ import { PrismaClient } from "@prisma/client";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 
-const prisma = new PrismaClient();
+// Utiliser une instance PrismaClient globale pour éviter trop de connexions
+const globalForPrisma = global;
+globalForPrisma.prisma = globalForPrisma.prisma || new PrismaClient();
+const prisma = globalForPrisma.prisma;
 
 // Fonction pour gérer la sérialisation des BigInt
 function handleBigInt(data) {
@@ -34,7 +37,9 @@ export async function GET() {
     
     // Vérifier l'authentification
     const auth = await checkAdminAuth();
+    // En développement, on peut ignorer l'authentification pour faciliter les tests
     if (!auth && process.env.NODE_ENV === 'production') {
+      console.log('[ADMIN_DASHBOARD_GET] Authentification échouée en production');
       return NextResponse.json({ error: "Non autorisé" }, { status: 401 });
     }
     
@@ -297,9 +302,12 @@ export async function GET() {
     return NextResponse.json(responseData);
   } catch (error) {
     console.error('[ADMIN_DASHBOARD_GET] Erreur:', error);
+    // Fournir plus de détails sur l'erreur pour faciliter le débogage
     return NextResponse.json({ 
       error: "Erreur lors de la récupération des données du tableau de bord",
-      details: error.message 
+      details: error.message,
+      stack: process.env.NODE_ENV === 'development' ? error.stack : undefined,
+      name: error.name
     }, { status: 500 });
   }
-} 
+}

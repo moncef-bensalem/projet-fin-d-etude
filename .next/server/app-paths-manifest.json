@@ -1,14 +1,5 @@
 {
-  "/api/categories/route": "app/api/categories/route.js",
-  "/api/stores/route": "app/api/stores/route.js",
-  "/api/products/route": "app/api/products/route.js",
-  "/api/auth/[...nextauth]/route": "app/api/auth/[...nextauth]/route.js",
-  "/api/products/counts/route": "app/api/products/counts/route.js",
-  "/login/page": "app/login/page.js",
   "/_not-found/page": "app/_not-found/page.js",
   "/(front-end)/page": "app/(front-end)/page.js",
-  "/manager/dashboard/reviews/page": "app/manager/dashboard/reviews/page.js",
-  "/manager/dashboard/page": "app/manager/dashboard/page.js",
-  "/(front-end)/help/page": "app/(front-end)/help/page.js",
-  "/(front-end)/become-seller/page": "app/(front-end)/become-seller/page.js"
+  "/(front-end)/products/[productId]/page": "app/(front-end)/products/[productId]/page.js"
 }

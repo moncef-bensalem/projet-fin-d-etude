@@ -16,7 +16,17 @@ export default function LargeCards() {
     const fetchDashboardData = async () => {
       try {
         setLoading(true);
-        const response = await fetch('/api/admin/dashboard');
+        // Ajouter un timeout pour éviter les attentes infinies
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 secondes timeout
+        
+        const response = await fetch('/api/admin/dashboard', {
+          signal: controller.signal,
+          // Ajouter cache: 'no-store' pour éviter les problèmes de cache en production
+          cache: 'no-store'
+        });
+        
+        clearTimeout(timeoutId);
         
         if (!response.ok) {
           const errorData = await response.json().catch(() => ({}));
@@ -33,10 +43,31 @@ export default function LargeCards() {
             thisMonth: data.salesStats.thisMonth || 0,
             thisYear: data.salesStats.thisYear || 0
           });
+        } else {
+          // Si les données sont vides, initialiser avec des valeurs par défaut
+          setSalesData({
+            today: 0,
+            yesterday: 0,
+            thisMonth: 0,
+            thisYear: 0
+          });
+          console.warn('Aucune donnée de vente disponible dans la réponse API');
         }
       } catch (error) {
         console.error('Error fetching dashboard data:', error);
-        toast.error("Erreur lors du chargement des données de ventes");
+        // Message d'erreur plus spécifique pour aider au débogage
+        if (error.name === 'AbortError') {
+          toast.error("Délai d'attente dépassé lors du chargement des données");
+        } else {
+          toast.error(`Erreur: ${error.message || "Erreur lors du chargement des données de ventes"}`);
+        }
+        // Initialiser avec des valeurs par défaut en cas d'erreur
+        setSalesData({
+          today: 0,
+          yesterday: 0,
+          thisMonth: 0,
+          thisYear: 0
+        });
       } finally {
         setLoading(false);
       }

@@ -24,7 +24,7 @@ const PenCategory = ({ name, image, slug }) => (
   </Link>
 );
 
-// Composant pour les produits en vedette
+// Composant pour les produits en vedette 
 const FeaturedProduct = ({ product, t }) => {
   const [isHovered, setIsHovered] = useState(false);
   
@@ -98,21 +98,44 @@ const BrandLogo = ({ logo, name }) => (
 // Composant pour les catégories
 const CategoryCard = ({ category }) => {
   return (
-    <Link href={`/categories/${category.id}`} className="group">
-      <div className="relative aspect-square rounded-lg overflow-hidden">
+    <Link href={`/categories/${category.id}`} className="group block">
+      <div className="relative aspect-square rounded-2xl overflow-hidden bg-white shadow-md border border-gray-200 transition transform hover:scale-105">
         <Image 
           src={category.image || `/images/placeholder-category.jpg`} 
           alt={category.name}
           fill
-          className="object-cover transition-transform duration-300 group-hover:scale-110"
+          className="object-cover transition-opacity duration-300 group-hover:opacity-90"
           unoptimized
         />
-        <div className="absolute inset-0 bg-black/10 group-hover:bg-black/20 transition-colors"></div>
       </div>
-      <h2 className="text-center text-gray-800 mt-2 font-medium">{category.name}</h2>
+      <h2 className="text-center text-sm mt-2 text-gray-700 font-semibold group-hover:text-orange-500 transition-colors">
+        {category.name}
+      </h2>
     </Link>
   );
 };
+
+// Composant pour les sections de catégories
+const CategorySection = ({ title, categories, viewAllLink }) => (
+  <div className="bg-white rounded-xl shadow-md p-5 mb-8">
+    <div className="flex justify-between items-center mb-5 border-b pb-3">
+      <h2 className="text-xl font-bold text-gray-900">{title}</h2>
+      {viewAllLink && (
+        <Link 
+          href={viewAllLink} 
+          className="text-orange-600 hover:text-orange-700 text-sm font-medium flex items-center"
+        >
+          Voir tout <ChevronRight className="h-4 w-4 ml-1" />
+        </Link>
+      )}
+    </div>
+    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+      {categories.map((category, index) => (
+        <CategoryCard key={category.id || `category-${index}`} category={category} />
+      ))}
+    </div>
+  </div>
+);
 
 // Composant pour les magasins
 const StoreCard = ({ store }) => {
@@ -657,14 +680,19 @@ export default function Home() {
           </div>
           
           <div className="mt-2 flex justify-center">
-            <Image 
-              src="/images/brain-reading.png" 
-              alt="Brain Reading" 
-              width={120} 
-              height={120} 
-              className="object-contain"
-              unoptimized
-            />
+            <div className="relative overflow-hidden rounded-full bg-orange-50 p-3 shadow-md animate-pulse">
+              <div className="absolute inset-0 bg-gradient-to-r from-orange-100 to-orange-50 opacity-50 animate-spin-slow"></div>
+              <div className="relative animate-bounce-gentle">
+                <Image 
+                  src="/images/brain-reading.png" 
+                  alt="Brain Reading" 
+                  width={120} 
+                  height={120} 
+                  className="object-contain drop-shadow-md"
+                  unoptimized
+                />
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -755,11 +783,11 @@ export default function Home() {
                   </Link>
                 </div>
 
-                <div className="p-4">
-                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+                <div className="p-3">
+                  <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-3">
                     {loading ? (
                       // État de chargement
-                      Array.from({ length: 6 }).map((_, idx) => (
+                      Array.from({ length: 8 }).map((_, idx) => (
                         <div key={idx} className="bg-gray-100 rounded-lg overflow-hidden aspect-square animate-pulse">
                           <div className="h-full w-full"></div>
                         </div>
@@ -768,7 +796,7 @@ export default function Home() {
                       // Produits de la catégorie
                       categoryProducts.map((product) => (
                         <Link key={product.id} href={`/products/${product.id}`} className="group block">
-                          <div className="bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300 transform group-hover:-translate-y-1">
+                          <div className="bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 transform group-hover:-translate-y-1">
                             <div className="relative aspect-square overflow-hidden">
                               <Image 
                                 src={product.images[0]} 
@@ -778,30 +806,25 @@ export default function Home() {
                                 unoptimized
                               />
                               {product.discount > 0 && (
-                                <div className="absolute top-3 left-3 bg-red-500 text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-md z-10">
+                                <div className="absolute top-1 left-1 bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full shadow-sm z-10">
                                   -{product.discount}%
                                 </div>
                               )}
-                              <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                              <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                                <div className="bg-white/80 backdrop-blur-sm rounded-full p-2 shadow-md transform translate-y-4 group-hover:translate-y-0 transition-all duration-300">
-                                  <ShoppingBag className="h-5 w-5 text-orange-600" />
-                                </div>
-                              </div>
+                              <div className="absolute inset-0 bg-black/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                             </div>
-                            <div className="p-4">
-                              <h3 className="font-medium text-gray-900 line-clamp-1 group-hover:text-orange-600 transition-colors">{product.name}</h3>
-                              <div className="flex items-center justify-between mt-2">
+                            <div className="p-2">
+                              <h3 className="text-xs font-medium text-gray-900 line-clamp-1 group-hover:text-orange-600 transition-colors">{product.name}</h3>
+                              <div className="flex items-center justify-between mt-1">
                                 {product.discount > 0 ? (
                                   <div className="flex flex-col">
-                                    <span className="text-sm font-bold text-orange-600">{(product.price * (1 - product.discount / 100)).toFixed(2)} DT</span>
-                                    <span className="text-xs text-gray-500 line-through">{product.price.toFixed(2)} DT</span>
+                                    <span className="text-xs font-bold text-orange-600">{(product.price * (1 - product.discount / 100)).toFixed(2)} DT</span>
+                                    <span className="text-[10px] text-gray-500 line-through">{product.price.toFixed(2)} DT</span>
                                   </div>
                                 ) : (
-                                  <span className="text-sm font-bold text-gray-900">{product.price.toFixed(2)} DT</span>
+                                  <span className="text-xs font-bold text-gray-900">{product.price.toFixed(2)} DT</span>
                                 )}
-                                <div className="h-6 w-6 rounded-full bg-orange-100 flex items-center justify-center">
-                                  <ChevronRight className="h-3 w-3 text-orange-600" />
+                                <div className="h-4 w-4 rounded-full bg-orange-100 flex items-center justify-center">
+                                  <ChevronRight className="h-2 w-2 text-orange-600" />
                                 </div>
                               </div>
                             </div>

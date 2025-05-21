@@ -45,10 +45,20 @@ export default function BestSellingProducts() {
         const fetchCategories = async () => {
             try {
                 console.log('Fetching categories...');
-                const response = await fetch('/api/admin/categories');
+                // Ajouter un timeout pour éviter les attentes infinies
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 secondes timeout
+                
+                const response = await fetch('/api/admin/categories', {
+                    signal: controller.signal,
+                    // Désactiver le cache pour éviter les problèmes en production
+                    cache: 'no-store'
+                });
+                
+                clearTimeout(timeoutId);
                 
                 if (!response.ok) {
-                    throw new Error('Failed to fetch categories');
+                    throw new Error(`Failed to fetch categories: ${response.status} ${response.statusText}`);
                 }
                 
                 const data = await response.json();
@@ -58,10 +68,17 @@ export default function BestSellingProducts() {
                     setCategories(data.categories);
                 } else {
                     console.error('Invalid categories data format:', data);
+                    // Utiliser des catégories par défaut si le format est invalide
+                    return [];
                 }
             } catch (error) {
                 console.error('Error fetching categories:', error);
-                toast.error('Failed to load categories');
+                if (error.name === 'AbortError') {
+                    toast.error("Délai d'attente dépassé lors du chargement des catégories");
+                } else {
+                    toast.error(`Erreur: ${error.message || "Échec du chargement des catégories"}`);
+                }
+                return [];
             }
         };
 
@@ -72,10 +89,18 @@ export default function BestSellingProducts() {
                 await fetchCategories(); // First get categories
                 
                 // Then get sales data
-                const response = await fetch('/api/admin/dashboard/categories-summary');
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 secondes timeout
+                
+                const response = await fetch('/api/admin/dashboard/categories-summary', {
+                    signal: controller.signal,
+                    cache: 'no-store'
+                });
+                
+                clearTimeout(timeoutId);
                 
                 if (!response.ok) {
-                    throw new Error('Failed to fetch category sales data');
+                    throw new Error(`Failed to fetch category sales data: ${response.status} ${response.statusText}`);
                 }
                 
                 const data = await response.json();
@@ -134,7 +159,12 @@ export default function BestSellingProducts() {
                 }
             } catch (error) {
                 console.error('Error in fetchSalesData:', error);
-                toast.error('Failed to load sales data');
+                if (error.name === 'AbortError') {
+                    toast.error("Délai d'attente dépassé lors du chargement des données de ventes");
+                } else {
+                    toast.error(`Erreur: ${error.message || "Échec du chargement des données de ventes"}`);
+                }
+                // Toujours utiliser les données de secours en cas d'erreur
                 useFallbackData();
             } finally {
                 setLoading(false);
@@ -186,7 +216,7 @@ export default function BestSellingProducts() {
         };
 
         fetchSalesData();
-    }, [categories.length]);
+    }, []); // Supprimer la dépendance categories.length pour éviter les boucles infinies
 
     const options = {
         plugins: {

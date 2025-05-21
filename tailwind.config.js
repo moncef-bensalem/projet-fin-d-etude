@@ -65,10 +65,20 @@ module.exports = {
         shimmer: {
           '0%': { transform: 'translateX(-100%)' },
           '100%': { transform: 'translateX(100%)' }
+        },
+        'spin-slow': {
+          '0%': { transform: 'rotate(0deg)' },
+          '100%': { transform: 'rotate(360deg)' }
+        },
+        'bounce-gentle': {
+          '0%, 100%': { transform: 'translateY(0)' },
+          '50%': { transform: 'translateY(-5px)' }
         }
       },
       animation: {
-        shimmer: 'shimmer 2s infinite linear'
+        shimmer: 'shimmer 2s infinite linear',
+        'spin-slow': 'spin-slow 8s linear infinite',
+        'bounce-gentle': 'bounce-gentle 3s ease-in-out infinite'
       },
     },
   },

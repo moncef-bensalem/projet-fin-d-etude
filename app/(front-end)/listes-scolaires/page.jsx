@@ -14,6 +14,7 @@ export default function ListesScolairesPage() {
   const [listes, setListes] = useState([]);
   const [filteredListes, setFilteredListes] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [filterNiveau, setFilterNiveau] = useState("");
   const [filterEtablissement, setFilterEtablissement] = useState("");
@@ -59,15 +60,46 @@ export default function ListesScolairesPage() {
   const fetchListes = async () => {
     try {
       setIsLoading(true);
-      const res = await fetch("/api/listes-scolaires/published");
+      setError(null);
+      
+      // Ajouter un timeout pour éviter les attentes infinies
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 secondes timeout
+      
+      const res = await fetch("/api/listes-scolaires/published", {
+        signal: controller.signal,
+        cache: 'no-store' // Désactiver le cache pour éviter les problèmes
+      });
+      
+      clearTimeout(timeoutId);
+      
       if (!res.ok) {
-        throw new Error("Erreur lors de la récupération des listes scolaires");
+        throw new Error(`Erreur lors de la récupération des listes scolaires: ${res.status} ${res.statusText}`);
       }
+      
       const data = await res.json();
-      setListes(data);
-      setFilteredListes(data);
+      
+      // Vérifier si data est un tableau (même vide)
+      if (Array.isArray(data)) {
+        setListes(data);
+        setFilteredListes(data);
+        console.log(`Listes scolaires récupérées: ${data.length}`);
+      } else {
+        console.error("Format de données incorrect:", data);
+        setListes([]);
+        setFilteredListes([]);
+        setError("Le format des données reçues est incorrect");
+      }
     } catch (error) {
-      console.error("Erreur:", error);
+      console.error("Erreur lors du chargement des listes scolaires:", error);
+      setListes([]);
+      setFilteredListes([]);
+      
+      if (error.name === 'AbortError') {
+        setError("Le chargement a pris trop de temps. Veuillez réessayer.");
+      } else {
+        setError("Impossible de charger les listes scolaires. Veuillez réessayer plus tard.");
+      }
     } finally {
       setIsLoading(false);
     }
@@ -153,6 +185,17 @@ export default function ListesScolairesPage() {
         <div className="flex justify-center items-center h-64">
           <Loader2 className="h-8 w-8 animate-spin text-primary" />
           <span className="ml-2">Chargement des listes scolaires...</span>
+        </div>
+      ) : error ? (
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-8 text-center">
+          <div className="text-red-500 mb-4">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            </svg>
+          </div>
+          <h3 className="text-xl font-medium mb-2">Erreur de chargement</h3>
+          <p className="text-gray-500 dark:text-gray-400 mb-4">{error}</p>
+          <Button onClick={fetchListes}>Réessayer</Button>
         </div>
       ) : filteredListes.length === 0 ? (
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-8 text-center">
