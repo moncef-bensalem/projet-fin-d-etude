@@ -99,7 +99,11 @@ export async function GET(request) {
     const role = session.user.role;
     console.log(`[REDIRECT_BY_ROLE] Redirection basée sur le rôle: ${role}`);
     
-    const baseUrl = process.env.NEXTAUTH_URL || 'http://localhost:3000';
+    // Utiliser l'URL de la requête comme base pour la redirection
+    const origin = request.headers.get('origin') || request.headers.get('host') || process.env.NEXTAUTH_URL || 'http://localhost:3000';
+    const baseUrl = origin.startsWith('http') ? origin : `https://${origin}`;
+    
+    console.log(`[REDIRECT_BY_ROLE] URL de base pour la redirection: ${baseUrl}`);
     
     if (role === "CUSTOMER") {
       console.log('[REDIRECT_BY_ROLE] Redirection vers la page d\'accueil (CUSTOMER)');
