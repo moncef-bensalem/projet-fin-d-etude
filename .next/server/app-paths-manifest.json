@@ -1,5 +1,15 @@
 {
-  "/_not-found/page": "app/_not-found/page.js",
+  "/api/auth/[...nextauth]/route": "app/api/auth/[...nextauth]/route.js",
+  "/api/manager/dashboard/stats/route": "app/api/manager/dashboard/stats/route.js",
+  "/api/auth/redirect-by-role/route": "app/api/auth/redirect-by-role/route.js",
+  "/api/admin/dashboard/route": "app/api/admin/dashboard/route.js",
+  "/api/admin/categories/route": "app/api/admin/categories/route.js",
+  "/api/admin/dashboard/recent-orders/route": "app/api/admin/dashboard/recent-orders/route.js",
+  "/api/admin/dashboard/categories-summary/route": "app/api/admin/dashboard/categories-summary/route.js",
+  "/login/page": "app/login/page.js",
+  "/auth/error/page": "app/auth/error/page.js",
+  "/dashboard/page": "app/dashboard/page.js",
   "/(front-end)/page": "app/(front-end)/page.js",
-  "/(front-end)/products/[productId]/page": "app/(front-end)/products/[productId]/page.js"
+  "/manager/dashboard/page": "app/manager/dashboard/page.js",
+  "/seller/dashboard/page": "app/seller/dashboard/page.js"
 }

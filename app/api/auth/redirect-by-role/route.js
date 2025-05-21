@@ -99,27 +99,32 @@ export async function GET(request) {
     const role = session.user.role;
     console.log(`[REDIRECT_BY_ROLE] Redirection basée sur le rôle: ${role}`);
     
-    // Utiliser l'URL de la requête comme base pour la redirection
-    const origin = request.headers.get('origin') || request.headers.get('host') || process.env.NEXTAUTH_URL || 'http://localhost:3000';
-    const baseUrl = origin.startsWith('http') ? origin : `https://${origin}`;
-    
-    console.log(`[REDIRECT_BY_ROLE] URL de base pour la redirection: ${baseUrl}`);
+    // Fonction pour créer une URL sécurisée pour la redirection
+    const createRedirectUrl = (path) => {
+      // Déterminer l'URL de base
+      const host = request.headers.get('host') || 'localhost:3000';
+      const protocol = host.includes('localhost') && process.env.NODE_ENV === 'development' ? 'http' : 'https';
+      const baseUrl = `${protocol}://${host}`;
+      
+      console.log(`[REDIRECT_BY_ROLE] URL de base pour la redirection: ${baseUrl}, chemin: ${path}`);
+      return new URL(path, baseUrl);
+    };
     
     if (role === "CUSTOMER") {
       console.log('[REDIRECT_BY_ROLE] Redirection vers la page d\'accueil (CUSTOMER)');
-      return NextResponse.redirect(new URL('/', baseUrl));
+      return NextResponse.redirect(createRedirectUrl('/'));
     } else if (role === "SELLER") {
       console.log('[REDIRECT_BY_ROLE] Redirection vers le tableau de bord vendeur');
-      return NextResponse.redirect(new URL('/seller/dashboard', baseUrl));
+      return NextResponse.redirect(createRedirectUrl('/seller/dashboard'));
     } else if (role === "MANAGER") {
       console.log('[REDIRECT_BY_ROLE] Redirection vers le tableau de bord manager');
-      return NextResponse.redirect(new URL('/manager/dashboard', baseUrl));
+      return NextResponse.redirect(createRedirectUrl('/manager/dashboard'));
     } else if (role === "ADMIN") {
       console.log('[REDIRECT_BY_ROLE] Redirection vers le tableau de bord admin');
-      return NextResponse.redirect(new URL('/dashboard', baseUrl));
+      return NextResponse.redirect(createRedirectUrl('/dashboard'));
     } else {
       console.log(`[REDIRECT_BY_ROLE] Rôle non reconnu: ${role}, redirection vers le tableau de bord par défaut`);
-      return NextResponse.redirect(new URL('/dashboard', baseUrl));
+      return NextResponse.redirect(createRedirectUrl('/dashboard'));
     }
   } catch (error) {
     console.error('[REDIRECT_BY_ROLE] Erreur lors de la redirection:', error);

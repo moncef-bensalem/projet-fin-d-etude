@@ -10,38 +10,73 @@ export default withAuth(
     // et essaie d'accéder au dashboard
     if (!token && (pathname.startsWith("/dashboard") || pathname.startsWith("/manager/dashboard") || pathname.startsWith("/seller/dashboard"))) {
       console.log(`[MIDDLEWARE] Redirection vers login: ${pathname}`);
-      return NextResponse.redirect(new URL("/login", req.url));
+      
+      // Construire l'URL de redirection en préservant le protocole
+      const url = new URL("/login", req.url);
+      
+      // S'assurer que le protocole correspond à celui de la requête
+      if (process.env.NODE_ENV === 'development') {
+        // En développement, forcer HTTP
+        url.protocol = 'http:';
+      }
+      
+      console.log(`[MIDDLEWARE] URL de redirection: ${url.toString()}`);
+      return NextResponse.redirect(url);
     }
 
     // Rediriger vers le dashboard si l'utilisateur est connecté
     // et essaie d'accéder à la page de connexion ou d'inscription
     if (token && (pathname === "/login" || pathname.startsWith("/register"))) {
+      console.log(`[MIDDLEWARE] Redirection depuis login/register vers dashboard, rôle: ${token.role}`);
+      
+      // Fonction pour créer une URL sécurisée pour la redirection
+      const createRedirectUrl = (path) => {
+        const url = new URL(path, req.url);
+        if (process.env.NODE_ENV === 'development') {
+          url.protocol = 'http:';
+        }
+        console.log(`[MIDDLEWARE] URL de redirection: ${url.toString()}`);
+        return url;
+      };
+      
       // Rediriger en fonction du rôle
       if (token.role === 'ADMIN') {
-        return NextResponse.redirect(new URL("/dashboard", req.url));
+        return NextResponse.redirect(createRedirectUrl("/dashboard"));
       } else if (token.role === 'SELLER') {
-        return NextResponse.redirect(new URL("/seller/dashboard", req.url));
+        return NextResponse.redirect(createRedirectUrl("/seller/dashboard"));
       } else if (token.role === 'MANAGER') {
-        return NextResponse.redirect(new URL("/manager/dashboard", req.url));
+        return NextResponse.redirect(createRedirectUrl("/manager/dashboard"));
       } else if (token.role === 'CUSTOMER') {
-        return NextResponse.redirect(new URL("/", req.url));
+        return NextResponse.redirect(createRedirectUrl("/"));
       } else {
-        return NextResponse.redirect(new URL("/dashboard", req.url));
+        return NextResponse.redirect(createRedirectUrl("/dashboard"));
       }
     }
 
     // Protéger les routes du manager uniquement pour les managers
     if (pathname.startsWith("/manager/") && (!token || token.role !== 'MANAGER')) {
+      console.log(`[MIDDLEWARE] Accès non autorisé à ${pathname}, rôle: ${token?.role || 'non connecté'}`);
+      
+      // Fonction pour créer une URL sécurisée pour la redirection
+      const createRedirectUrl = (path) => {
+        const url = new URL(path, req.url);
+        if (process.env.NODE_ENV === 'development') {
+          url.protocol = 'http:';
+        }
+        console.log(`[MIDDLEWARE] URL de redirection: ${url.toString()}`);
+        return url;
+      };
+      
       if (!token) {
-        return NextResponse.redirect(new URL("/login", req.url));
+        return NextResponse.redirect(createRedirectUrl("/login"));
       } else {
         // Rediriger vers le dashboard approprié selon le rôle
         if (token.role === 'ADMIN') {
-          return NextResponse.redirect(new URL("/dashboard", req.url));
+          return NextResponse.redirect(createRedirectUrl("/dashboard"));
         } else if (token.role === 'SELLER') {
-          return NextResponse.redirect(new URL("/seller/dashboard", req.url));
+          return NextResponse.redirect(createRedirectUrl("/seller/dashboard"));
         } else {
-          return NextResponse.redirect(new URL("/", req.url));
+          return NextResponse.redirect(createRedirectUrl("/"));
         }
       }
     }
