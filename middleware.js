@@ -17,12 +17,8 @@ export default withAuth(
         const baseUrl = new URL(req.url).origin;
         const url = new URL(path, baseUrl);
         
-        // S'assurer que le protocole est correct selon l'environnement
-        if (process.env.NODE_ENV === 'development') {
-          url.protocol = 'http:';
-        } else {
-          url.protocol = 'https:';
-        }
+        // Toujours utiliser HTTPS en production
+        url.protocol = 'https:';
         
         console.log(`[MIDDLEWARE] URL de redirection: ${url.toString()}`);
         return url;
@@ -38,10 +34,12 @@ export default withAuth(
       
       // Fonction pour créer une URL sécurisée pour la redirection
       const createRedirectUrl = (path) => {
-        const url = new URL(path, req.url);
-        if (process.env.NODE_ENV === 'development') {
-          url.protocol = 'http:';
-        }
+        const baseUrl = new URL(req.url).origin;
+        const url = new URL(path, baseUrl);
+        
+        // Toujours utiliser HTTPS en production
+        url.protocol = 'https:';
+        
         console.log(`[MIDDLEWARE] URL de redirection: ${url.toString()}`);
         return url;
       };
@@ -66,10 +64,12 @@ export default withAuth(
       
       // Fonction pour créer une URL sécurisée pour la redirection
       const createRedirectUrl = (path) => {
-        const url = new URL(path, req.url);
-        if (process.env.NODE_ENV === 'development') {
-          url.protocol = 'http:';
-        }
+        const baseUrl = new URL(req.url).origin;
+        const url = new URL(path, baseUrl);
+        
+        // Toujours utiliser HTTPS en production
+        url.protocol = 'https:';
+        
         console.log(`[MIDDLEWARE] URL de redirection: ${url.toString()}`);
         return url;
       };
