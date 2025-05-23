@@ -180,20 +180,18 @@ export const authOptions = {
       name: `next-auth.session-token`,
       options: {
         httpOnly: true,
-        sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+        sameSite: "none",
         path: "/",
-        secure: process.env.NODE_ENV === "production",
-        domain: process.env.NODE_ENV === "production" ? ".vercel.app" : undefined,
+        secure: true
       },
     },
     callbackUrl: {
       name: `next-auth.callback-url`,
       options: {
         httpOnly: true,
-        sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+        sameSite: "none",
         path: "/",
-        secure: process.env.NODE_ENV === "production",
-        domain: process.env.NODE_ENV === "production" ? ".vercel.app" : undefined,
+        secure: true
       },
     },
   },
