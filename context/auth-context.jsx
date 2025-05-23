@@ -35,28 +35,16 @@ export function AuthProvider({ children }) {
 
   const checkAuth = async () => {
     try {
-      // Utiliser fetch avec un chemin relatif simple
-      console.log(`[AUTH] Checking auth session`);
-      
       const response = await fetch('/api/auth/session');
-      console.log(`[AUTH] Session response status: ${response.status}`);
-      
       if (response.ok) {
         const session = await response.json();
-        console.log(`[AUTH] Session data:`, session);
-        
         if (session?.user) {
           setUser(session.user);
           setStore(session.user.store);
-          console.log(`[AUTH] User authenticated as ${session.user.role}`);
-        } else {
-          console.log(`[AUTH] No user in session`);
         }
-      } else {
-        console.error(`[AUTH] Failed to get session: ${response.status}`);
       }
     } catch (error) {
-      console.error('[AUTH] Error checking auth:', error);
+      console.error('Error checking auth:', error);
     } finally {
       setLoading(false);
     }
@@ -74,15 +62,10 @@ export function AuthProvider({ children }) {
         throw new Error(result.error);
       }
 
-      // Récupérer les informations de l'utilisateur avec un chemin relatif simple
-      console.log(`[AUTH:LOGIN] Getting session`);
-      
+      // Récupérer les informations de l'utilisateur
       const response = await fetch('/api/auth/session');
-      console.log(`[AUTH:LOGIN] Session response status: ${response.status}`);
-      
       if (response.ok) {
         const session = await response.json();
-        console.log(`[AUTH:LOGIN] Session data:`, session);
         if (session?.user) {
           setUser(session.user);
           setStore(session.user.store);
