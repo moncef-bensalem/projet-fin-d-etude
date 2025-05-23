@@ -5,11 +5,23 @@ export default withAuth(
   function middleware(req) {
     const { pathname } = req.nextUrl;
     const token = req.nextauth.token;
+    
+    // Fonction sécurisée pour créer des URLs de redirection
+    const createRedirectUrl = (path) => {
+      try {
+        // Utiliser l'origine de nextUrl qui est toujours définie
+        return new URL(path, req.nextUrl.origin);
+      } catch (error) {
+        console.error(`[MIDDLEWARE] Error creating URL: ${error.message}`);
+        // Fallback avec l'URL de base du site
+        return new URL(path, process.env.NEXTAUTH_URL || 'https://penventory-psi.vercel.app');
+      }
+    };
 
     // Rediriger vers la page de connexion si l'utilisateur n'est pas connecté
     // et essaie d'accéder au dashboard
-    if (!token && (pathname.startsWith("/(back-office)/dashboard") || pathname.startsWith("/manager/dashboard"))) {
-      return NextResponse.redirect(new URL("/login", req.url));
+    if (!token && (pathname.startsWith("/(back-office)/dashboard") || pathname.startsWith("/dashboard") || pathname.startsWith("/manager/dashboard") || pathname.startsWith("/seller/dashboard"))) {
+      return NextResponse.redirect(createRedirectUrl("/login"));
     }
 
     // Rediriger vers le dashboard si l'utilisateur est connecté
@@ -17,30 +29,30 @@ export default withAuth(
     if (token && (pathname === "/login" || pathname.startsWith("/register"))) {
       // Rediriger en fonction du rôle
       if (token.role === 'ADMIN') {
-        return NextResponse.redirect(new URL("/dashboard", req.url));
+        return NextResponse.redirect(createRedirectUrl("/dashboard"));
       } else if (token.role === 'SELLER') {
-        return NextResponse.redirect(new URL("/seller/dashboard", req.url));
+        return NextResponse.redirect(createRedirectUrl("/seller/dashboard"));
       } else if (token.role === 'MANAGER') {
-        return NextResponse.redirect(new URL("/manager/dashboard", req.url));
+        return NextResponse.redirect(createRedirectUrl("/manager/dashboard"));
       } else if (token.role === 'CUSTOMER') {
-        return NextResponse.redirect(new URL("/", req.url));
+        return NextResponse.redirect(createRedirectUrl("/"));
       } else {
-        return NextResponse.redirect(new URL("/dashboard", req.url));
+        return NextResponse.redirect(createRedirectUrl("/dashboard"));
       }
     }
 
     // Protéger les routes du manager uniquement pour les managers
     if (pathname.startsWith("/manager/") && (!token || token.role !== 'MANAGER')) {
       if (!token) {
-        return NextResponse.redirect(new URL("/login", req.url));
+        return NextResponse.redirect(createRedirectUrl("/login"));
       } else {
         // Rediriger vers le dashboard approprié selon le rôle
         if (token.role === 'ADMIN') {
-          return NextResponse.redirect(new URL("/dashboard", req.url));
+          return NextResponse.redirect(createRedirectUrl("/dashboard"));
         } else if (token.role === 'SELLER') {
-          return NextResponse.redirect(new URL("/seller/dashboard", req.url));
+          return NextResponse.redirect(createRedirectUrl("/seller/dashboard"));
         } else {
-          return NextResponse.redirect(new URL("/", req.url));
+          return NextResponse.redirect(createRedirectUrl("/"));
         }
       }
     }
@@ -78,7 +90,9 @@ export default withAuth(
 export const config = {
   matcher: [
     "/(back-office)/dashboard/:path*",
+    "/dashboard/:path*",
     "/manager/:path*",
+    "/seller/:path*",
     "/login",
     "/register/:path*"
   ]
