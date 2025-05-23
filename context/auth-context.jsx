@@ -35,11 +35,10 @@ export function AuthProvider({ children }) {
 
   const checkAuth = async () => {
     try {
-      // Utiliser window.fetch avec l'URL complète pour éviter les problèmes de chemin relatif
-      const baseUrl = window.location.origin;
-      console.log(`[AUTH] Checking auth with base URL: ${baseUrl}`);
+      // Utiliser fetch avec un chemin relatif simple
+      console.log(`[AUTH] Checking auth session`);
       
-      const response = await window.fetch(`${baseUrl}/api/auth/session`);
+      const response = await fetch('/api/auth/session');
       console.log(`[AUTH] Session response status: ${response.status}`);
       
       if (response.ok) {
@@ -75,11 +74,10 @@ export function AuthProvider({ children }) {
         throw new Error(result.error);
       }
 
-      // Récupérer les informations de l'utilisateur avec l'URL complète
-      const baseUrl = window.location.origin;
-      console.log(`[AUTH:LOGIN] Getting session with base URL: ${baseUrl}`);
+      // Récupérer les informations de l'utilisateur avec un chemin relatif simple
+      console.log(`[AUTH:LOGIN] Getting session`);
       
-      const response = await window.fetch(`${baseUrl}/api/auth/session`);
+      const response = await fetch('/api/auth/session');
       console.log(`[AUTH:LOGIN] Session response status: ${response.status}`);
       
       if (response.ok) {
