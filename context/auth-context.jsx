@@ -35,16 +35,29 @@ export function AuthProvider({ children }) {
 
   const checkAuth = async () => {
     try {
-      const response = await fetch('/api/auth/session');
+      // Utiliser window.fetch avec l'URL complète pour éviter les problèmes de chemin relatif
+      const baseUrl = window.location.origin;
+      console.log(`[AUTH] Checking auth with base URL: ${baseUrl}`);
+      
+      const response = await window.fetch(`${baseUrl}/api/auth/session`);
+      console.log(`[AUTH] Session response status: ${response.status}`);
+      
       if (response.ok) {
         const session = await response.json();
+        console.log(`[AUTH] Session data:`, session);
+        
         if (session?.user) {
           setUser(session.user);
           setStore(session.user.store);
+          console.log(`[AUTH] User authenticated as ${session.user.role}`);
+        } else {
+          console.log(`[AUTH] No user in session`);
         }
+      } else {
+        console.error(`[AUTH] Failed to get session: ${response.status}`);
       }
     } catch (error) {
-      console.error('Error checking auth:', error);
+      console.error('[AUTH] Error checking auth:', error);
     } finally {
       setLoading(false);
     }
@@ -62,10 +75,16 @@ export function AuthProvider({ children }) {
         throw new Error(result.error);
       }
 
-      // Récupérer les informations de l'utilisateur
-      const response = await fetch('/api/auth/session');
+      // Récupérer les informations de l'utilisateur avec l'URL complète
+      const baseUrl = window.location.origin;
+      console.log(`[AUTH:LOGIN] Getting session with base URL: ${baseUrl}`);
+      
+      const response = await window.fetch(`${baseUrl}/api/auth/session`);
+      console.log(`[AUTH:LOGIN] Session response status: ${response.status}`);
+      
       if (response.ok) {
         const session = await response.json();
+        console.log(`[AUTH:LOGIN] Session data:`, session);
         if (session?.user) {
           setUser(session.user);
           setStore(session.user.store);
