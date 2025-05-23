@@ -7,7 +7,7 @@
     }
   ],
   "env": {
-    "NEXTAUTH_URL": "https://penventory-ieu8b5907-moncefs-projects-8c3d8f28.vercel.app"
+    "NEXTAUTH_URL": "https://penventory-psi.vercel.app/"
   },
   "headers": [
     {
