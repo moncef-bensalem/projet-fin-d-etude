@@ -11,17 +11,24 @@ export default withAuth(
     if (!token && (pathname.startsWith("/dashboard") || pathname.startsWith("/manager/dashboard") || pathname.startsWith("/seller/dashboard"))) {
       console.log(`[MIDDLEWARE] Redirection vers login: ${pathname}`);
       
-      // Construire l'URL de redirection en préservant le protocole
-      const url = new URL("/login", req.url);
+      // Fonction pour créer une URL sécurisée pour la redirection
+      const createRedirectUrl = (path) => {
+        // Utiliser la base URL de la requête pour garantir le même domaine
+        const baseUrl = new URL(req.url).origin;
+        const url = new URL(path, baseUrl);
+        
+        // S'assurer que le protocole est correct selon l'environnement
+        if (process.env.NODE_ENV === 'development') {
+          url.protocol = 'http:';
+        } else {
+          url.protocol = 'https:';
+        }
+        
+        console.log(`[MIDDLEWARE] URL de redirection: ${url.toString()}`);
+        return url;
+      };
       
-      // S'assurer que le protocole correspond à celui de la requête
-      if (process.env.NODE_ENV === 'development') {
-        // En développement, forcer HTTP
-        url.protocol = 'http:';
-      }
-      
-      console.log(`[MIDDLEWARE] URL de redirection: ${url.toString()}`);
-      return NextResponse.redirect(url);
+      return NextResponse.redirect(createRedirectUrl('/login'));
     }
 
     // Rediriger vers le dashboard si l'utilisateur est connecté
