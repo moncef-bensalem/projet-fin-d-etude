@@ -1,15 +1,19 @@
 {
+  "/api/categories/route": "app/api/categories/route.js",
+  "/api/stores/route": "app/api/stores/route.js",
+  "/api/products/route": "app/api/products/route.js",
   "/api/auth/[...nextauth]/route": "app/api/auth/[...nextauth]/route.js",
-  "/api/manager/dashboard/stats/route": "app/api/manager/dashboard/stats/route.js",
+  "/api/products/counts/route": "app/api/products/counts/route.js",
   "/api/auth/redirect-by-role/route": "app/api/auth/redirect-by-role/route.js",
-  "/api/admin/dashboard/route": "app/api/admin/dashboard/route.js",
-  "/api/admin/categories/route": "app/api/admin/categories/route.js",
-  "/api/admin/dashboard/recent-orders/route": "app/api/admin/dashboard/recent-orders/route.js",
-  "/api/admin/dashboard/categories-summary/route": "app/api/admin/dashboard/categories-summary/route.js",
+  "/api/manager/dashboard/stats/route": "app/api/manager/dashboard/stats/route.js",
+  "/api/tickets/route": "app/api/tickets/route.js",
+  "/api/tickets/[id]/route": "app/api/tickets/[id]/route.js",
   "/login/page": "app/login/page.js",
-  "/auth/error/page": "app/auth/error/page.js",
-  "/dashboard/page": "app/dashboard/page.js",
+  "/_not-found/page": "app/_not-found/page.js",
   "/(front-end)/page": "app/(front-end)/page.js",
+  "/(front-end)/wishlist/page": "app/(front-end)/wishlist/page.js",
   "/manager/dashboard/page": "app/manager/dashboard/page.js",
-  "/seller/dashboard/page": "app/seller/dashboard/page.js"
+  "/manager/dashboard/support/page": "app/manager/dashboard/support/page.js",
+  "/(front-end)/cart/page": "app/(front-end)/cart/page.js",
+  "/manager/dashboard/support/[id]/page": "app/manager/dashboard/support/[id]/page.js"
 }

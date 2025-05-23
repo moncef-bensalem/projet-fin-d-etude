@@ -61,7 +61,15 @@ export default function EditProduct({ params }) {
           throw new Error('Erreur lors du chargement du produit');
         }
         
-        const productData = await productResponse.json();
+        const responseData = await productResponse.json();
+        console.log('Données du produit reçues:', responseData);
+        
+        // Vérifier que la réponse contient bien un objet product
+        if (!responseData.product) {
+          throw new Error('Format de réponse invalide: données du produit manquantes');
+        }
+        
+        const productData = responseData.product;
         
         // Mettre à jour le formulaire avec les données du produit
         setFormData({

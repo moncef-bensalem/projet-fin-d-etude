@@ -90,14 +90,21 @@ model Order {
   createdAt       DateTime @db.Date
   customerId      String   @db.ObjectId
   number          String   @unique
-  shippingAddress String
+  shippingAddress Json     // Objet contenant les détails de l'adresse
   status          String
   paymentStatus   String   @default("PENDING")
   storeId         String   @db.ObjectId
   total           Float
+  subtotal        Float?   @default(0)
+  shipping        Float?   @default(0)
+  tax             Float?   @default(0)
+  couponAmount    Float?   @default(0)
+  couponApplied   Boolean  @default(false)
+  paymentMethod   String?  // Méthode de paiement utilisée
   updatedAt       DateTime @db.Date
   promotionId     String?  @db.ObjectId
   isRated         Boolean  @default(false)
+  estimatedDelivery DateTime?
   
   items           OrderItem[]
   promotion       Promotion? @relation(fields: [promotionId], references: [id])

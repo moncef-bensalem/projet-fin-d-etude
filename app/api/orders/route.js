@@ -22,6 +22,13 @@ export async function POST(req) {
       items, 
       shippingAddress, 
       total,
+      subtotal,
+      taxAmount,
+      shippingCost,
+      couponAmount,
+      couponApplied,
+      paymentMethod,
+      paymentStatus,
       customerInfo
     } = data;
     
@@ -139,33 +146,35 @@ export async function POST(req) {
         // Préparer les données complètes de la commande
         const orderData = {
           number: orderNumber,
-          status: "PENDING",
-          total: storeTotal,
-          shippingAddress: typeof shippingAddress === 'string' 
-            ? shippingAddress 
-            : JSON.stringify(shippingAddress),
+          customer: {
+            connect: { id: customerId }
+          },
           storeId: storeId,
+          shippingAddress: shippingAddress, // Stocké directement comme JSON
+          total: storeTotal,
+          subtotal: subtotal ? parseFloat(subtotal) : 0,
+          shipping: shippingCost ? parseFloat(shippingCost) : 0,
+          tax: taxAmount ? parseFloat(taxAmount) : 0,
+          couponAmount: couponAmount ? parseFloat(couponAmount) : 0,
+          couponApplied: couponApplied || false,
+          paymentMethod: paymentMethod || 'Carte bancaire',
+          paymentStatus: paymentStatus || 'PENDING',
+          estimatedDelivery: new Date(Date.now() + 4 * 24 * 60 * 60 * 1000), // Livraison estimée dans 4 jours
+          status: paymentStatus === 'PAID' ? 'PROCESSING' : 'PENDING',
+          createdAt: new Date(),
+          updatedAt: new Date(),
           items: {
             create: storeItems.map(item => ({
+              productId: item.productId,
               quantity: BigInt(item.quantity),
               price: item.price,
-              product: {
-                connect: { id: item.productId }
-              },
               createdAt: new Date(),
               updatedAt: new Date()
             }))
-          },
-          createdAt: new Date(),
-          updatedAt: new Date()
+          }
         };
         
-        // Ajouter la relation avec l'utilisateur seulement si on a un ID
-        if (customerId) {
-          orderData.customer = {
-            connect: { id: customerId }
-          };
-        }
+        // La relation avec l'utilisateur est déjà définie plus haut
         
         const order = await prisma.order.create({
           data: orderData,

@@ -4,9 +4,10 @@ import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { ShoppingCart, X, ChevronLeft, ChevronRight, Trash2, ShoppingBag, AlertCircle } from 'lucide-react';
+import { ShoppingCart, X, ChevronLeft, ChevronRight, Trash2, ShoppingBag, AlertCircle, CheckCircle } from 'lucide-react';
 import ProductCard from '../components/ProductCard';
 import { useConfirmation } from '@/hooks/use-confirmation';
+import toast from 'react-hot-toast';
 
 export default function CartPage() {
   const router = useRouter();
@@ -100,7 +101,7 @@ export default function CartPage() {
   // Fonction pour appliquer un code promo
   const applyCoupon = async () => {
     if (!couponCode.trim()) {
-      alert('Veuillez entrer un code promo');
+      toast.error('Veuillez entrer un code promo');
       return;
     }
     
@@ -167,18 +168,24 @@ export default function CartPage() {
           localStorage.removeItem('appliedPromoStore');
         }
         
-        alert(result.message || 'Code promo appliqué avec succès !');
+        toast.success(
+          <div className="flex items-center gap-2">
+            <CheckCircle className="h-5 w-5 text-green-500" />
+            <span>{result.message || 'Code promo appliqué avec succès !'}</span>
+          </div>,
+          { duration: 4000 }
+        );
       } else {
         setCouponApplied(false);
         setCouponDiscount(0);
         localStorage.removeItem('appliedPromoStore');
-        alert(result.message || 'Code promo invalide.');
+        toast.error(result.message || 'Code promo invalide.', { duration: 4000 });
       }
     } catch (error) {
       console.error('Erreur lors de la vérification du code promo:', error);
       setCouponApplied(false);
       setCouponDiscount(0);
-      alert('Une erreur est survenue lors de la vérification du code promo. Veuillez réessayer.');
+      toast.error('Une erreur est survenue lors de la vérification du code promo. Veuillez réessayer.', { duration: 4000 });
     }
   };
   
@@ -241,20 +248,50 @@ export default function CartPage() {
       return;
     }
     
-    // Sauvegarder les informations de réduction du coupon dans localStorage
-    if (couponApplied) {
-      localStorage.setItem('couponDiscount', couponDiscount.toString());
-      localStorage.setItem('couponAmount', couponAmount.toString());
-      localStorage.setItem('promoStoreId', promoStoreId || '');
-      localStorage.setItem('cartTotal', total.toString());
+    // Créer un objet avec toutes les informations du panier
+    const cartSummary = {
+      subtotal: subtotal,
+      shippingCost: shippingCost,
+      taxAmount: taxAmount,
+      total: total,
+      couponApplied: couponApplied,
+      couponDiscount: couponApplied ? couponDiscount : 0,
+      couponAmount: couponApplied ? couponAmount : 0,
+      promoStoreId: promoStoreId || ''
+    };
+    
+    console.log('Récapitulatif du panier à stocker:', cartSummary);
+    
+    try {
+      // Stocker l'objet complet dans localStorage
+      localStorage.setItem('cartSummary', JSON.stringify(cartSummary));
+      
+      // Stocker également les valeurs individuelles pour compatibilité
+      localStorage.setItem('cartSubtotal', subtotal.toString());
+      localStorage.setItem('shippingCost', shippingCost.toString());
       localStorage.setItem('taxAmount', taxAmount.toString());
-    } else {
-      // Supprimer les informations de réduction si aucun coupon n'est appliqué
-      localStorage.removeItem('couponDiscount');
-      localStorage.removeItem('couponAmount');
-      localStorage.removeItem('promoStoreId');
-      localStorage.removeItem('cartTotal');
-      localStorage.removeItem('taxAmount');
+      localStorage.setItem('cartTotal', total.toString());
+      
+      if (couponApplied) {
+        localStorage.setItem('couponDiscount', couponDiscount.toString());
+        localStorage.setItem('couponAmount', couponAmount.toString());
+        localStorage.setItem('promoStoreId', promoStoreId || '');
+      } else {
+        localStorage.removeItem('couponDiscount');
+        localStorage.removeItem('couponAmount');
+        localStorage.removeItem('promoStoreId');
+      }
+      
+      // Déclencher manuellement un événement de stockage pour notifier les autres pages
+      window.dispatchEvent(new Event('storage'));
+      
+      // Vérifier que les données ont bien été enregistrées
+      console.log('Vérification des données stockées:', {
+        cartSummary: localStorage.getItem('cartSummary'),
+        cartTotal: localStorage.getItem('cartTotal')
+      });
+    } catch (error) {
+      console.error('Erreur lors du stockage des données dans localStorage:', error);
     }
     
     // Rediriger vers la page de paiement
@@ -372,9 +409,9 @@ export default function CartPage() {
                 <div className="divide-y divide-gray-200 dark:divide-gray-700">
                   {cartItems.map((item) => {
                     // Calculer le prix avec réduction si applicable
-                    const itemPrice = item.discount > 0 
+                    const itemPrice = item.price ? (item.discount > 0 
                       ? item.price * (1 - item.discount / 100) 
-                      : item.price;
+                      : item.price) : 0;
                     
                     return (
                       <div key={item.id} className="p-6 flex flex-col sm:flex-row">
@@ -421,7 +458,7 @@ export default function CartPage() {
                                   </span>
                                 )}
                                 <span className="text-lg font-medium text-gray-900 dark:text-white">
-                                  {itemPrice.toFixed(2)} DT
+                                  {(itemPrice || 0).toFixed(2)} DT
                                 </span>
                               </div>
                             </div>

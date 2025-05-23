@@ -4,6 +4,8 @@ import React, { useEffect, useState } from "react";
 import { ThemeProvider } from "next-themes";
 import { Toaster } from "react-hot-toast";
 import { AuthProvider } from './auth-context';
+import { CartProvider } from './cart-context';
+import { CheckoutProvider } from './checkout-context';
 
 export default function Providers({ children }) {
   const [mounted, setMounted] = useState(false);
@@ -26,8 +28,12 @@ export default function Providers({ children }) {
       forcedTheme={!mounted ? undefined : null}
     >
       <AuthProvider>
-        <Toaster position="top-center" />
-        {children}
+        <CartProvider>
+          <CheckoutProvider>
+            <Toaster position="top-center" />
+            {children}
+          </CheckoutProvider>
+        </CartProvider>
       </AuthProvider>
     </ThemeProvider>
   );
