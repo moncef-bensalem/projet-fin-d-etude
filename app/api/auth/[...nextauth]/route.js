@@ -207,18 +207,18 @@ export const authOptions = {
       name: `next-auth.session-token`,
       options: {
         httpOnly: true,
-        sameSite: process.env.NODE_ENV === "production" ? "lax" : "none",
+        sameSite: "lax",
         path: "/",
-        secure: true
+        secure: process.env.NODE_ENV === "production"
       },
     },
     callbackUrl: {
       name: `next-auth.callback-url`,
       options: {
         httpOnly: true,
-        sameSite: process.env.NODE_ENV === "production" ? "lax" : "none",
+        sameSite: "lax",
         path: "/",
-        secure: true
+        secure: process.env.NODE_ENV === "production"
       },
     },
   },

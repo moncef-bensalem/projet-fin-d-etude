@@ -5,25 +5,18 @@ export default withAuth(
   function middleware(req) {
     const { pathname } = req.nextUrl;
     const token = req.nextauth.token;
+    
+    // Fonction simplifiée pour créer une URL de redirection
+    const createRedirectUrl = (path) => {
+      const baseUrl = process.env.NEXTAUTH_URL || new URL(req.url).origin;
+      console.log(`[MIDDLEWARE] Base URL: ${baseUrl}, Path: ${path}`);
+      return new URL(path, baseUrl);
+    };
 
     // Rediriger vers la page de connexion si l'utilisateur n'est pas connecté
     // et essaie d'accéder au dashboard
-    if (!token && (pathname.startsWith("/dashboard") || pathname.startsWith("/manager/dashboard") || pathname.startsWith("/seller/dashboard"))) {
+    if (!token && (pathname.startsWith("/dashboard") || pathname.startsWith("/manager/") || pathname.startsWith("/seller/"))) {
       console.log(`[MIDDLEWARE] Redirection vers login: ${pathname}`);
-      
-      // Fonction pour créer une URL sécurisée pour la redirection
-      const createRedirectUrl = (path) => {
-        // Utiliser la base URL de la requête pour garantir le même domaine
-        const baseUrl = new URL(req.url).origin;
-        const url = new URL(path, baseUrl);
-        
-        // Toujours utiliser HTTPS en production
-        url.protocol = 'https:';
-        
-        console.log(`[MIDDLEWARE] URL de redirection: ${url.toString()}`);
-        return url;
-      };
-      
       return NextResponse.redirect(createRedirectUrl('/login'));
     }
 
@@ -32,18 +25,6 @@ export default withAuth(
     if (token && (pathname === "/login" || pathname.startsWith("/register"))) {
       console.log(`[MIDDLEWARE] Redirection depuis login/register vers dashboard, rôle: ${token.role}`);
       
-      // Fonction pour créer une URL sécurisée pour la redirection
-      const createRedirectUrl = (path) => {
-        const baseUrl = new URL(req.url).origin;
-        const url = new URL(path, baseUrl);
-        
-        // Toujours utiliser HTTPS en production
-        url.protocol = 'https:';
-        
-        console.log(`[MIDDLEWARE] URL de redirection: ${url.toString()}`);
-        return url;
-      };
-      
       // Rediriger en fonction du rôle
       if (token.role === 'ADMIN') {
         return NextResponse.redirect(createRedirectUrl("/dashboard"));
@@ -51,28 +32,14 @@ export default withAuth(
         return NextResponse.redirect(createRedirectUrl("/seller/dashboard"));
       } else if (token.role === 'MANAGER') {
         return NextResponse.redirect(createRedirectUrl("/manager/dashboard"));
-      } else if (token.role === 'CUSTOMER') {
-        return NextResponse.redirect(createRedirectUrl("/"));
       } else {
-        return NextResponse.redirect(createRedirectUrl("/dashboard"));
+        return NextResponse.redirect(createRedirectUrl("/"));
       }
     }
 
     // Protéger les routes du manager uniquement pour les managers
     if (pathname.startsWith("/manager/") && (!token || token.role !== 'MANAGER')) {
       console.log(`[MIDDLEWARE] Accès non autorisé à ${pathname}, rôle: ${token?.role || 'non connecté'}`);
-      
-      // Fonction pour créer une URL sécurisée pour la redirection
-      const createRedirectUrl = (path) => {
-        const baseUrl = new URL(req.url).origin;
-        const url = new URL(path, baseUrl);
-        
-        // Toujours utiliser HTTPS en production
-        url.protocol = 'https:';
-        
-        console.log(`[MIDDLEWARE] URL de redirection: ${url.toString()}`);
-        return url;
-      };
       
       if (!token) {
         return NextResponse.redirect(createRedirectUrl("/login"));
