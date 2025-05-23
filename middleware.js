@@ -8,9 +8,21 @@ export default withAuth(
     
     // Fonction simplifiée pour créer une URL de redirection
     const createRedirectUrl = (path) => {
-      const baseUrl = process.env.NEXTAUTH_URL || new URL(req.url).origin;
-      console.log(`[MIDDLEWARE] Base URL: ${baseUrl}, Path: ${path}`);
-      return new URL(path, baseUrl);
+      try {
+        // S'assurer que le path commence par un slash
+        const safePath = path.startsWith('/') ? path : `/${path}`;
+        
+        // Utiliser l'URL de la requête comme fallback
+        const origin = req.nextUrl.origin;
+        console.log(`[MIDDLEWARE] Origin: ${origin}, Path: ${safePath}`);
+        
+        // Construire l'URL de redirection
+        return new URL(safePath, origin);
+      } catch (error) {
+        console.error(`[MIDDLEWARE] Error creating redirect URL: ${error.message}`);
+        // Fallback sécurisé
+        return new URL(path.startsWith('/') ? path : `/${path}`, 'https://penventory-psi.vercel.app');
+      }
     };
 
     // Rediriger vers la page de connexion si l'utilisateur n'est pas connecté

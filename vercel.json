@@ -7,7 +7,7 @@
     }
   ],
   "env": {
-    "NEXTAUTH_URL": "https://penventory-psi.vercel.app/"
+    "NEXTAUTH_URL": "https://penventory-psi.vercel.app"
   },
   "headers": [
     {
