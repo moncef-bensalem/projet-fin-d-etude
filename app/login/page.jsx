@@ -7,9 +7,11 @@ import toast from 'react-hot-toast';
 import Link from 'next/link';
 import { FcGoogle } from 'react-icons/fc';
 import { Logo } from '@/components/ui/logo';
+import { useAuth } from '@/context/auth-context';
 
 export default function LoginPage() {
   const router = useRouter();
+  const { login } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -18,23 +20,13 @@ export default function LoginPage() {
     e.preventDefault();
     setLoading(true);
     try {
-      // Utiliser la redirection intégrée de NextAuth
-      const result = await signIn('credentials', {
-        email,
-        password,
-        redirect: false,
-      });
-      
-      if (result?.error) {
-        toast.error(result.error);
-      } else if (result?.ok) {
-        // Redirection manuelle en fonction du rôle
-        // Nous utiliserons le callback de redirection de NextAuth défini dans [...nextauth]/route.js
-        router.push('/dashboard');
-      }
+      // Utiliser la fonction login du contexte d'authentification
+      // qui gère la redirection en fonction du rôle
+      await login(email, password);
+      // La redirection est gérée dans la fonction login du contexte
     } catch (error) {
       console.error('Erreur de connexion:', error);
-      toast.error('Une erreur est survenue lors de la connexion');
+      // Les erreurs sont déjà gérées dans la fonction login
     } finally {
       setLoading(false);
     }
