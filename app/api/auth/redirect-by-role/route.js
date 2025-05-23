@@ -101,10 +101,8 @@ export async function GET(request) {
     
     // Fonction pour créer une URL sécurisée pour la redirection
     const createRedirectUrl = (path) => {
-      // Déterminer l'URL de base
-      const host = request.headers.get('host') || 'localhost:3000';
-      const protocol = host.includes('localhost') && process.env.NODE_ENV === 'development' ? 'http' : 'https';
-      const baseUrl = `${protocol}://${host}`;
+      // Utiliser l'URL configurée dans les variables d'environnement
+      const baseUrl = process.env.NEXTAUTH_URL || 'https://penventory-psi.vercel.app/';
       
       console.log(`[REDIRECT_BY_ROLE] URL de base pour la redirection: ${baseUrl}, chemin: ${path}`);
       return new URL(path, baseUrl);
@@ -131,7 +129,7 @@ export async function GET(request) {
     console.error('[REDIRECT_BY_ROLE] Stack trace:', error.stack);
     
     // En cas d'erreur, rediriger vers la page de connexion avec un paramètre d'erreur
-    const baseUrl = process.env.NEXTAUTH_URL || 'http://localhost:3000';
+    const baseUrl = process.env.NEXTAUTH_URL || 'https://penventory-psi.vercel.app/';
     return NextResponse.redirect(new URL(`/login?error=${encodeURIComponent('redirect_error')}`, baseUrl));
   }
 }
