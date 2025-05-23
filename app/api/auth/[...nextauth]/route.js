@@ -156,12 +156,39 @@ export const authOptions = {
       return session;
     },
     redirect: async ({ url, baseUrl, token }) => {
-      if (url.includes('/login') || url === baseUrl) {
-        if (token?.role === 'SELLER') {
+      console.log(`[NEXTAUTH] Redirection: url=${url}, baseUrl=${baseUrl}, token.role=${token?.role}`);
+      
+      // Si l'URL est la page de login ou la racine et que l'utilisateur est connecté
+      if ((url.includes('/login') || url === baseUrl) && token) {
+        // Rediriger en fonction du rôle
+        if (token.role === 'ADMIN') {
+          console.log('[NEXTAUTH] Redirection vers dashboard admin');
+          return '/dashboard';
+        } else if (token.role === 'SELLER') {
+          console.log('[NEXTAUTH] Redirection vers dashboard vendeur');
           return '/seller/dashboard';
+        } else if (token.role === 'MANAGER') {
+          console.log('[NEXTAUTH] Redirection vers dashboard manager');
+          return '/manager/dashboard';
+        } else if (token.role === 'CUSTOMER') {
+          console.log('[NEXTAUTH] Redirection vers page d\'accueil');
+          return '/';
         }
-        return '/dashboard';
       }
+      
+      // Si l'URL contient un callbackUrl, l'utiliser
+      if (url.includes('callbackUrl=')) {
+        try {
+          const callbackUrl = new URL(url).searchParams.get('callbackUrl');
+          console.log(`[NEXTAUTH] Utilisation du callbackUrl: ${callbackUrl}`);
+          return callbackUrl;
+        } catch (error) {
+          console.error('[NEXTAUTH] Erreur lors de l\'extraction du callbackUrl:', error);
+        }
+      }
+      
+      // Sinon, retourner l'URL demandée
+      console.log(`[NEXTAUTH] Redirection vers l'URL demandée: ${url}`);
       return url;
     },
   },

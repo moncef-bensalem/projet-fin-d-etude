@@ -22,13 +22,15 @@ export default function LoginPage() {
       const result = await signIn('credentials', {
         email,
         password,
-        redirect: true,
-        callbackUrl: '/api/auth/redirect-by-role' // Nous allons créer cette API
+        redirect: false,
       });
       
-      // Ce code ne s'exécutera que si redirect: false
       if (result?.error) {
         toast.error(result.error);
+      } else if (result?.ok) {
+        // Redirection manuelle en fonction du rôle
+        // Nous utiliserons le callback de redirection de NextAuth défini dans [...nextauth]/route.js
+        router.push('/dashboard');
       }
     } catch (error) {
       console.error('Erreur de connexion:', error);
@@ -40,7 +42,8 @@ export default function LoginPage() {
 
   const handleGoogleSignIn = () => {
     signIn('google', { 
-      callbackUrl: '/api/auth/redirect-by-role',
+      redirect: true,
+      callbackUrl: '/dashboard',
     });
   };
 
