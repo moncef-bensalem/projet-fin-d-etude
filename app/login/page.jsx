@@ -20,19 +20,30 @@ export default function LoginPage() {
     e.preventDefault();
     setLoading(true);
     try {
-      // Utiliser la fonction login du contexte d'authentification
-      // qui gère la redirection en fonction du rôle
-      await login(email, password);
-      // La redirection est gérée dans la fonction login du contexte
+      // Utiliser directement signIn au lieu de passer par le contexte
+      // pour éviter les problèmes de redirection
+      const result = await signIn('credentials', {
+        email,
+        password,
+        redirect: true,  // Laisser NextAuth gérer la redirection
+        callbackUrl: '/dashboard'  // URL par défaut, le middleware redirigera selon le rôle
+      });
+      
+      // Note: Ce code ne sera pas exécuté si redirect:true car la page sera rechargée
+      if (result?.error) {
+        toast.error(result.error);
+      }
     } catch (error) {
       console.error('Erreur de connexion:', error);
-      // Les erreurs sont déjà gérées dans la fonction login
+      toast.error(error.message || 'Erreur de connexion');
     } finally {
       setLoading(false);
     }
   };
 
   const handleGoogleSignIn = () => {
+    // Utiliser redirect: true pour laisser NextAuth gérer la redirection
+    // Le middleware s'occupera de rediriger vers le bon dashboard selon le rôle
     signIn('google', { 
       redirect: true,
       callbackUrl: '/dashboard',

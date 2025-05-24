@@ -157,9 +157,17 @@ export const authOptions = {
     },
     redirect: async ({ url, baseUrl, token }) => {
       if (url.includes('/login') || url === baseUrl) {
-        if (token?.role === 'SELLER') {
+        // Rediriger en fonction du rôle
+        if (token?.role === 'ADMIN') {
+          return '/dashboard';
+        } else if (token?.role === 'SELLER') {
           return '/seller/dashboard';
+        } else if (token?.role === 'MANAGER') {
+          return '/manager/dashboard';
+        } else if (token?.role === 'CUSTOMER') {
+          return '/';
         }
+        // Fallback au dashboard par défaut
         return '/dashboard';
       }
       return url;

@@ -72,34 +72,49 @@ export function AuthProvider({ children }) {
           
           toast.success('Connexion réussie');
           
-          // Rediriger vers le tableau de bord en fonction du rôle
-          switch (session.user.role) {
-            case 'ADMIN':
-              router.push('/dashboard');
-              break;
-            case 'MANAGER':
-              router.push('/manager/dashboard');
-              break;
-            case 'SELLER':
-              router.push('/seller/dashboard');
-              break;
-            case 'CUSTOMER':
-              router.push('/');
-              break;
-            default:
-              router.push('/');
-              break;
+          // Définir le chemin de redirection en fonction du rôle
+          let redirectPath = '/';
+          try {
+            switch (session.user.role) {
+              case 'ADMIN':
+                redirectPath = '/dashboard';
+                break;
+              case 'MANAGER':
+                redirectPath = '/manager/dashboard';
+                break;
+              case 'SELLER':
+                redirectPath = '/seller/dashboard';
+                break;
+              case 'CUSTOMER':
+                redirectPath = '/';
+                break;
+              default:
+                redirectPath = '/';
+                break;
+            }
+            
+            // Utiliser setTimeout pour laisser le temps à la session d'être complètement établie
+            setTimeout(() => {
+              // Utiliser window.location pour une redirection côté client plus fiable
+              window.location.href = redirectPath;
+            }, 100);
+            
+            return;
+          } catch (redirectError) {
+            console.error('Redirect error:', redirectError);
+            // Fallback en cas d'erreur de redirection
+            setTimeout(() => {
+              window.location.href = '/';
+            }, 100);
           }
-          
-          router.refresh();
-          return;
         }
       }
       
       // Si on arrive ici, c'est qu'on n'a pas pu obtenir les infos de l'utilisateur
       toast.success('Connexion réussie');
-      router.push('/');
-      router.refresh();
+      setTimeout(() => {
+        window.location.href = '/';
+      }, 100);
     } catch (error) {
       console.error('Login error:', error);
       toast.error(error.message);

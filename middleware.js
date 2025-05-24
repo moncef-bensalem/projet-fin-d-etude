@@ -6,54 +6,90 @@ export default withAuth(
     const { pathname } = req.nextUrl;
     const token = req.nextauth.token;
     
-    // Fonction sécurisée pour créer des URLs de redirection
+    // Fonction simplifiée pour créer des URLs de redirection
     const createRedirectUrl = (path) => {
-      try {
-        // Utiliser l'origine de nextUrl qui est toujours définie
-        return new URL(path, req.nextUrl.origin);
-      } catch (error) {
-        console.error(`[MIDDLEWARE] Error creating URL: ${error.message}`);
-        // Fallback avec l'URL de base du site
-        return new URL(path, process.env.NEXTAUTH_URL || 'https://penventory-psi.vercel.app');
+      // Créer une nouvelle URL en utilisant la méthode la plus simple possible
+      const url = new URL(req.nextUrl);
+      url.pathname = path;
+      return url;
+    };
+
+    // Fonction pour obtenir le chemin du dashboard en fonction du rôle
+    const getDashboardPath = (role) => {
+      console.log(`[MIDDLEWARE] Redirecting user with role: ${role}`);
+      switch(role) {
+        case 'ADMIN':
+          return '/dashboard';
+        case 'MANAGER':
+          return '/manager/dashboard';
+        case 'SELLER':
+          return '/seller/dashboard';
+        case 'CUSTOMER':
+          return '/';
+        default:
+          return '/';
       }
     };
 
     // Rediriger vers la page de connexion si l'utilisateur n'est pas connecté
     // et essaie d'accéder au dashboard
-    if (!token && (pathname.startsWith("/(back-office)/dashboard") || pathname.startsWith("/dashboard") || pathname.startsWith("/manager/dashboard") || pathname.startsWith("/seller/dashboard"))) {
-      return NextResponse.redirect(createRedirectUrl("/login"));
+    if (!token && (pathname.startsWith("/(back-office)/dashboard") || 
+                  pathname.startsWith("/dashboard") || 
+                  pathname.startsWith("/manager/dashboard") || 
+                  pathname.startsWith("/seller/dashboard"))) {
+      console.log('[MIDDLEWARE] Unauthenticated user trying to access dashboard');
+      const url = createRedirectUrl("/login");
+      return NextResponse.redirect(url);
     }
 
     // Rediriger vers le dashboard si l'utilisateur est connecté
     // et essaie d'accéder à la page de connexion ou d'inscription
     if (token && (pathname === "/login" || pathname.startsWith("/register"))) {
-      // Rediriger en fonction du rôle
-      if (token.role === 'ADMIN') {
-        return NextResponse.redirect(createRedirectUrl("/dashboard"));
-      } else if (token.role === 'SELLER') {
-        return NextResponse.redirect(createRedirectUrl("/seller/dashboard"));
-      } else if (token.role === 'MANAGER') {
-        return NextResponse.redirect(createRedirectUrl("/manager/dashboard"));
-      } else if (token.role === 'CUSTOMER') {
-        return NextResponse.redirect(createRedirectUrl("/"));
+      console.log(`[MIDDLEWARE] Authenticated user with role ${token.role} trying to access login/register`);
+      const redirectPath = getDashboardPath(token.role);
+      const url = createRedirectUrl(redirectPath);
+      return NextResponse.redirect(url);
+    }
+
+    // Protéger les routes du dashboard admin pour les non-admins
+    if (pathname.startsWith("/dashboard") && (!token || token.role !== 'ADMIN')) {
+      if (!token) {
+        console.log('[MIDDLEWARE] Unauthenticated user trying to access admin dashboard');
+        const url = createRedirectUrl("/login");
+        return NextResponse.redirect(url);
       } else {
-        return NextResponse.redirect(createRedirectUrl("/dashboard"));
+        console.log(`[MIDDLEWARE] User with role ${token.role} trying to access admin dashboard`);
+        const redirectPath = getDashboardPath(token.role);
+        const url = createRedirectUrl(redirectPath);
+        return NextResponse.redirect(url);
       }
     }
 
     // Protéger les routes du manager uniquement pour les managers
     if (pathname.startsWith("/manager/") && (!token || token.role !== 'MANAGER')) {
       if (!token) {
-        return NextResponse.redirect(createRedirectUrl("/login"));
+        console.log('[MIDDLEWARE] Unauthenticated user trying to access manager dashboard');
+        const url = createRedirectUrl("/login");
+        return NextResponse.redirect(url);
       } else {
-        // Rediriger vers le dashboard approprié selon le rôle
-        if (token.role === 'ADMIN') {
-          return NextResponse.redirect(createRedirectUrl("/dashboard"));
-        } else if (token.role === 'SELLER') {
-          return NextResponse.redirect(createRedirectUrl("/seller/dashboard"));
-        } else {
-          return NextResponse.redirect(createRedirectUrl("/"));
-        }
+        console.log(`[MIDDLEWARE] User with role ${token.role} trying to access manager dashboard`);
+        const redirectPath = getDashboardPath(token.role);
+        const url = createRedirectUrl(redirectPath);
+        return NextResponse.redirect(url);
+      }
+    }
+    
+    // Protéger les routes du seller uniquement pour les sellers
+    if (pathname.startsWith("/seller/") && (!token || token.role !== 'SELLER')) {
+      if (!token) {
+        console.log('[MIDDLEWARE] Unauthenticated user trying to access seller dashboard');
+        const url = createRedirectUrl("/login");
+        return NextResponse.redirect(url);
+      } else {
+        console.log(`[MIDDLEWARE] User with role ${token.role} trying to access seller dashboard`);
+        const redirectPath = getDashboardPath(token.role);
+        const url = createRedirectUrl(redirectPath);
+        return NextResponse.redirect(url);
       }
     }
 
